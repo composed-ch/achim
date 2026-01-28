@@ -1,7 +1,10 @@
-package achim
+package cmd
 
-import "github.com/spf13/cobra"
-import "fmt"
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+	"os"
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "achim",
