@@ -6,36 +6,43 @@ Advanced Cloud Hyperscaling Infrastructure Manager (reimplementation in Go) usin
 
 This Go implementation is a port from the [Python implementation](https://github.com/patrickbucher/achim)
 
-- new commands
-    - [ ] init: setup Exoscale API access
-- ported commands 
-    - [ ] attach-network
-    - [ ] check-state
-    - [ ] cleanup-networks
-    - [ ] create-group
-    - [ ] create-instance
-    - [ ] create-network
-    - [ ] create-scenario
-    - [ ] deprotect
-    - [ ] destroy
-    - [ ] destroy-network
-    - [ ] destroy-scenario
-    - [ ] export-group-overview
-    - [ ] export-inventory
-    - [ ] export-scenario-overview
-    - [ ] export-user-playbook
-    - [ ] flush-dns
-    - [ ] flush-networks
-    - [ ] label-all-instances
-    - [ ] list-images
-    - [ ] list-instance-types
-    - [ ] list-instances
-    - [ ] list-network
-    - [ ] probe
-    - [ ] protect
-    - [ ] resize-disk
-    - [ ] scale-instance
-    - [ ] start
-    - [ ] stop
-    - [ ] sync-dns
+- command structure (and existing achim command, if different)
+    - access
+        - [ ] add ([new])
+        - [ ] remove ([new])
+    - instance
+        - [ ] create (create-instance)
+        - [ ] check (check-state)
+        - [ ] protect
+        - [ ] deprotect
+        - [ ] destroy
+        - [ ] label (label-all-instances)
+        - [ ] list (list-instances)
+        - [ ] probe
+        - [ ] resize (resize-disk)
+        - [ ] scale (scale-instance)
+        - [ ] start
+        - [ ] stop
+    - group
+        - [ ] create (create-group)
+        - [ ] export-overview (export-group-overview)
+        - [ ] export-inventory (export-inventory)
+        - [ ] export-playbook (export-user-playbook)
+    - network
+        - [ ] attach
+        - [ ] create (create-network)
+        - [ ] cleanup (cleanup-network)
+        - [ ] flush (flush-networks)
+        - [ ] list (list-network)
+        - [ ] destroy (destroy-network)
+    - scenario
+        - [ ] create (create-scenario)
+        - [ ] destroy (destroy-scenario)
+        - [ ] export-overview (export-scenario-overview)
+    - dns
+        - [ ] flush
+        - [ ] sync (sync-dns)
+    - images
+        - [ ] list (list-images)
+        - [ ] list-types (list-instance-types)
 
