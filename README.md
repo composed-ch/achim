@@ -28,6 +28,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] export-overview (export-group-overview)
         - [ ] export-inventory (export-inventory)
         - [ ] export-playbook (export-user-playbook)
+        - [ ] file-from-text (TBD)
     - network
         - [ ] attach
         - [ ] create (create-network)
