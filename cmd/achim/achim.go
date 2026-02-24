@@ -13,16 +13,44 @@ func main() {
 		Name: "achim",
 		Commands: []*cli.Command{
 			{
-				Name: "tenant",
+				Name: "dns",
 				Commands: []*cli.Command{
 					{
-						Name: "add",
+						Name: "flush",
 					},
 					{
-						Name: "default",
+						Name: "sync",
+					},
+				},
+			},
+			{
+				Name: "group",
+				Commands: []*cli.Command{
+					{
+						Name: "create",
 					},
 					{
-						Name: "remove",
+						Name: "export-inventory",
+					},
+					{
+						Name: "export-overview",
+					},
+					{
+						Name: "export-playbook",
+					},
+					{
+						Name: "file-from-text",
+					},
+				},
+			},
+			{
+				Name: "images",
+				Commands: []*cli.Command{
+					{
+						Name: "list",
+					},
+					{
+						Name: "list-types",
 					},
 				},
 			},
@@ -30,13 +58,10 @@ func main() {
 				Name: "instance",
 				Commands: []*cli.Command{
 					{
-						Name: "create",
-					},
-					{
 						Name: "check",
 					},
 					{
-						Name: "protect",
+						Name: "create",
 					},
 					{
 						Name: "deprotect",
@@ -45,13 +70,16 @@ func main() {
 						Name: "destroy",
 					},
 					{
-						Name: "label",
-					},
-					{
 						Name: "list",
 					},
 					{
+						Name: "label",
+					},
+					{
 						Name: "probe",
+					},
+					{
+						Name: "protect",
 					},
 					{
 						Name: "resize",
@@ -68,45 +96,25 @@ func main() {
 				},
 			},
 			{
-				Name: "group",
-				Commands: []*cli.Command{
-					{
-						Name: "create",
-					},
-					{
-						Name: "export-overview",
-					},
-					{
-						Name: "export-inventory",
-					},
-					{
-						Name: "export-playbook",
-					},
-					{
-						Name: "file-from-text",
-					},
-				},
-			},
-			{
 				Name: "network",
 				Commands: []*cli.Command{
 					{
 						Name: "attach",
 					},
 					{
+						Name: "cleanup",
+					},
+					{
 						Name: "create",
 					},
 					{
-						Name: "cleanup",
+						Name: "destroy",
 					},
 					{
 						Name: "flush",
 					},
 					{
 						Name: "list",
-					},
-					{
-						Name: "destroy",
 					},
 				},
 			},
@@ -125,24 +133,16 @@ func main() {
 				},
 			},
 			{
-				Name: "dns",
+				Name: "tenant",
 				Commands: []*cli.Command{
 					{
-						Name: "flush",
+						Name: "add",
 					},
 					{
-						Name: "sync",
-					},
-				},
-			},
-			{
-				Name: "images",
-				Commands: []*cli.Command{
-					{
-						Name: "list",
+						Name: "default",
 					},
 					{
-						Name: "list-types",
+						Name: "remove",
 					},
 				},
 			},
