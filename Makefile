@@ -1,12 +1,15 @@
-.PHONY: all format clean check test cover clean
+.PHONY: all run format clean check test cover clean
 
 all: achim achim.exe
 
-achim: cmd/achim/main.go
-	go build -o achim cmd/achim/main.go
+achim: cmd/achim/achim.go
+	go build -o achim $^
 
 achim.exe: cmd/achim/main.go
 	GOOS=windows go build -o achim.exe cmd/achim/main.go
+
+run: cmd/achim/achim.go
+	go run $^
 
 format:
 	goimports -w .
