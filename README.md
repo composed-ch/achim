@@ -7,8 +7,9 @@ Advanced Cloud Hyperscaling Infrastructure Manager (reimplementation in Go) usin
 This Go implementation is a port from the [Python implementation](https://github.com/patrickbucher/achim)
 
 - command structure (and existing achim command, if different)
-    - access
+    - tenant
         - [ ] add ([new])
+        - [ ] default ([new])
         - [ ] remove ([new])
     - instance
         - [ ] create (create-instance)
