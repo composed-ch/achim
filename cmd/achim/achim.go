@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/composed-ch/achim"
 	"github.com/urfave/cli/v3"
 )
 
@@ -137,6 +138,36 @@ func main() {
 				Commands: []*cli.Command{
 					{
 						Name: "add",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "name",
+								Usage:   "Tenant Name",
+								Aliases: []string{"n"},
+							},
+							&cli.StringFlag{
+								Name:    "key",
+								Usage:   "Exoscale API Key",
+								Aliases: []string{"k"},
+							},
+							&cli.StringFlag{
+								Name:    "secret",
+								Usage:   "Exoscale API Secret",
+								Aliases: []string{"s"},
+							},
+							&cli.StringFlag{
+								Name:    "zone",
+								Usage:   "Exoscale Zone",
+								Aliases: []string{"z"},
+							},
+						},
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							return achim.AddTenant(achim.Tenant{
+								Name:   cmd.String("name"),
+								Key:    cmd.String("key"),
+								Secret: cmd.String("secret"),
+								Zone:   cmd.String("zone"),
+							}, "tenants.json")
+						},
 					},
 					{
 						Name: "default",
