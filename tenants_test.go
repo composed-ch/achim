@@ -1,6 +1,7 @@
 package achim
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -25,5 +26,16 @@ func TestAddFirstTenant(t *testing.T) {
 	}
 	if info.Mode().Perm() != perm {
 		t.Fatalf("%s expected mode %o, got %o\n", path, perm, info.Mode().Perm())
+	}
+	var goachim Tenant
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read %s: %v\n", path, err)
+	}
+	if err := json.Unmarshal(data, &goachim); err != nil {
+		t.Fatalf("unmarshall %v: %v\n", data, err)
+	}
+	if goachim != tenant {
+		t.Fatalf("checking tenant: expected %v, got %v", tenant, goachim)
 	}
 }
