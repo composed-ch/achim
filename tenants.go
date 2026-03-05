@@ -1,15 +1,25 @@
 package achim
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+const ConfigFilePerm = 0600
 
 type Tenant struct {
-	Name   string
-	Key    string
-	Secret string
-	Zone   string
+	Name   string `json:"name"`
+	Key    string `json:"key"`
+	Secret string `json:"secret"`
+	Zone   string `json:"zone"`
 }
 
 func AddTenant(tenant Tenant, path string) error {
-	fmt.Println("add", tenant, "to", path)
+	data, err := json.MarshalIndent(tenant, "", "    ")
+	if err != nil {
+		return fmt.Errorf("convert %v to JSON: %v", tenant, err)
+	}
+	os.WriteFile(path, data, ConfigFilePerm)
 	return nil
 }
