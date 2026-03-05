@@ -39,3 +39,25 @@ func TestAddFirstTenant(t *testing.T) {
 		t.Fatalf("checking tenant: expected %v, got %v", tenant, goachim)
 	}
 }
+
+func TestAddTwoTenants(t *testing.T) {
+	const filename = "achim.json"
+	first := Tenant{
+		Name:   "1st",
+		Key:    "EXO-123",
+		Secret: "0123-4567",
+		Zone:   "ch-xy1",
+	}
+	second := Tenant{
+		Name:   "2nd",
+		Key:    "EXO-456",
+		Secret: "89ab-cdef",
+		Zone:   "ch-xy2",
+	}
+	if err := AddTenant(first, "" /* TODO */); err != nil {
+		// TODO
+	}
+	if err := AddTenant(second, "" /* TODO */); err != nil {
+		// TODO
+	}
+}
