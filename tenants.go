@@ -19,6 +19,10 @@ type Tenant struct {
 	Zone   string `json:"zone"`
 }
 
+// TODO: set tenant as default if it's the first one
+// TODO: new method GetDefaultTenant
+// TODO: implement operation to set default tenant
+
 func AddTenant(tenant Tenant, path string) error {
 	existing, err := ReadTenants(path)
 	if err != nil {
