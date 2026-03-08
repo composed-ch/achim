@@ -1,7 +1,6 @@
 package achim
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -20,6 +19,7 @@ func TestAddFirstTenant(t *testing.T) {
 	if err := AddTenant(tenant, path); err != nil {
 		t.Fatalf("add tenant %v: %v\n", tenant, err)
 	}
+	defer mustCleanup(t, path)
 	info, err := os.Stat(path)
 	if err != nil {
 		t.Fatalf("stat %s: %v\n", path, err)
@@ -27,21 +27,18 @@ func TestAddFirstTenant(t *testing.T) {
 	if info.Mode().Perm() != perm {
 		t.Fatalf("%s expected mode %o, got %o\n", path, perm, info.Mode().Perm())
 	}
-	var goachim Tenant
-	data, err := os.ReadFile(path)
+	tenantRetrieved, err := GetTenant("goachim", path)
 	if err != nil {
-		t.Fatalf("read %s: %v\n", path, err)
+		t.Fatalf("retrieve tenant %s: %v", "goachim", err)
 	}
-	if err := json.Unmarshal(data, &goachim); err != nil {
-		t.Fatalf("unmarshall %v: %v\n", data, err)
-	}
-	if goachim != tenant {
-		t.Fatalf("checking tenant: expected %v, got %v", tenant, goachim)
+	if *tenantRetrieved != tenant {
+		t.Fatalf("checking tenant: expected %v, got %v\n", tenant, tenantRetrieved)
 	}
 }
 
 func TestAddTwoTenants(t *testing.T) {
 	const filename = "achim.json"
+	path := fmt.Sprintf("%s%c%s", os.TempDir(), os.PathSeparator, filename)
 	first := Tenant{
 		Name:   "1st",
 		Key:    "EXO-123",
@@ -54,10 +51,31 @@ func TestAddTwoTenants(t *testing.T) {
 		Secret: "89ab-cdef",
 		Zone:   "ch-xy2",
 	}
-	if err := AddTenant(first, "" /* TODO */); err != nil {
-		// TODO
+	if err := AddTenant(first, path); err != nil {
+		t.Fatalf("add tenant %v: %v\n", first, err)
 	}
-	if err := AddTenant(second, "" /* TODO */); err != nil {
-		// TODO
+	defer mustCleanup(t, path)
+	if err := AddTenant(second, path); err != nil {
+		t.Fatalf("add tenant %v: %v\n", first, err)
+	}
+	firstRetrieved, err := GetTenant("1st", path)
+	if err != nil {
+		t.Fatalf("get tenant %s: %v\n", "1st", err)
+	}
+	if *firstRetrieved != first {
+		t.Fatalf("checking tenant: expected %v, got %v\n", first, firstRetrieved)
+	}
+	secondRetrieved, err := GetTenant("2nd", path)
+	if err != nil {
+		t.Fatalf("get tenant %s: %v\n", "2nd", err)
+	}
+	if *secondRetrieved != second {
+		t.Fatalf("checking tenant: expected %v, got %v\n", second, secondRetrieved)
+	}
+}
+
+func mustCleanup(t *testing.T, path string) {
+	if err := os.Remove(path); err != nil {
+		t.Fatalf("cleanup %s: %v\n", path, err)
 	}
 }

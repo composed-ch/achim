@@ -8,8 +8,8 @@ This Go implementation is a port from the [Python implementation](https://github
 
 - command structure (and existing achim command, if different)
     - tenant
+        - [ ] activate ([new])
         - [ ] add ([new])
-        - [ ] default ([new])
         - [ ] remove ([new])
     - instance
         - [ ] create (create-instance)
