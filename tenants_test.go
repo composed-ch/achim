@@ -34,6 +34,11 @@ func TestAddFirstTenant(t *testing.T) {
 	if *tenantRetrieved != tenant {
 		t.Fatalf("checking tenant: expected %v, got %v\n", tenant, tenantRetrieved)
 	}
+	if defaultTenant, err := GetDefaultTenant(path); err != nil {
+		t.Fatalf("retrieve default tenant: %v\n", err)
+	} else if *defaultTenant != tenant {
+		t.Fatalf("retrieve default tenant: expected %v, got %v\n", tenant, defaultTenant)
+	}
 }
 
 func TestAddTwoTenants(t *testing.T) {
@@ -71,6 +76,19 @@ func TestAddTwoTenants(t *testing.T) {
 	}
 	if *secondRetrieved != second {
 		t.Fatalf("checking tenant: expected %v, got %v\n", second, secondRetrieved)
+	}
+	if defaultTenant, err := GetDefaultTenant(path); err != nil {
+		t.Fatalf("retrieve default tenant: %v\n", err)
+	} else if *defaultTenant != first {
+		t.Fatalf("retrieve default tenant: expected %v, got %v\n", first, defaultTenant)
+	}
+	if err := SetDefaultTenant("2nd", path); err != nil {
+		t.Fatalf("set default tenant %s: %v\n", "2nd", err)
+	}
+	if defaultTenant, err := GetDefaultTenant(path); err != nil {
+		t.Fatalf("retrieve default tenant: %v\n", err)
+	} else if *defaultTenant != second {
+		t.Fatalf("retrieve default tenant: expected %v, got %v\n", first, defaultTenant)
 	}
 }
 

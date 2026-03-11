@@ -9,6 +9,7 @@ import (
 const ConfigFilePerm = 0600
 
 type TenantFile struct {
+	Default string            `json:"default"`
 	Tenants map[string]Tenant `json:"tenants"`
 }
 
@@ -19,27 +20,20 @@ type Tenant struct {
 	Zone   string `json:"zone"`
 }
 
-// TODO: set tenant as default if it's the first one
-// TODO: new method GetDefaultTenant
-// TODO: implement operation to set default tenant
-
 func AddTenant(tenant Tenant, path string) error {
 	existing, err := ReadTenants(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "no tenants under %s, creating new tenants file\n", path)
-		existing = &TenantFile{Tenants: make(map[string]Tenant)}
-	}
-	if _, ok := existing.Tenants[tenant.Name]; ok {
+		existing = &TenantFile{
+			Tenants: map[string]Tenant{tenant.Name: tenant},
+			Default: tenant.Name,
+		}
+	} else if _, ok := existing.Tenants[tenant.Name]; ok {
 		return fmt.Errorf("tenant %s already exists", tenant.Name)
+	} else {
+		existing.Tenants[tenant.Name] = tenant
 	}
-	fmt.Println(existing)
-	existing.Tenants[tenant.Name] = tenant
-	data, err := json.MarshalIndent(existing, "", "    ")
-	if err != nil {
-		return fmt.Errorf("convert %v to JSON: %v", tenant, err)
-	}
-	os.WriteFile(path, data, ConfigFilePerm)
-	return nil
+	return saveTenants(existing, path)
 }
 
 func GetTenant(name, path string) (*Tenant, error) {
@@ -67,4 +61,38 @@ func ReadTenants(path string) (*TenantFile, error) {
 		tenantsFile.Tenants = make(map[string]Tenant)
 	}
 	return &tenantsFile, nil
+}
+
+func GetDefaultTenant(path string) (*Tenant, error) {
+	tenants, err := ReadTenants(path)
+	if err != nil {
+		return nil, fmt.Errorf("read tenants: %v", err)
+	}
+	if tenant, ok := tenants.Tenants[tenants.Default]; !ok {
+		return nil, fmt.Errorf("retrieve default tenant %s from tenants: %v", tenants.Default, err)
+	} else {
+		return &tenant, nil
+	}
+}
+
+func SetDefaultTenant(name, path string) error {
+	tenants, err := ReadTenants(path)
+	if err != nil {
+		return fmt.Errorf("read tenants from %s: %v", path, err)
+	}
+	if _, ok := tenants.Tenants[name]; !ok {
+		return fmt.Errorf("no tenant %s in %s", name, path)
+	} else if tenants.Default != name {
+		tenants.Default = name
+		return saveTenants(tenants, path)
+	}
+	return nil
+}
+
+func saveTenants(tenants *TenantFile, path string) error {
+	data, err := json.MarshalIndent(tenants, "", "    ")
+	if err != nil {
+		return fmt.Errorf("convert %v to JSON: %v", tenants, err)
+	}
+	return os.WriteFile(path, data, ConfigFilePerm)
 }
