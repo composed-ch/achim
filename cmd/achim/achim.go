@@ -166,11 +166,21 @@ func main() {
 								Key:    cmd.String("key"),
 								Secret: cmd.String("secret"),
 								Zone:   cmd.String("zone"),
-							}, "tenants.json")
+							}, tenantsFilePath())
 						},
 					},
 					{
 						Name: "default",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "name",
+								Usage:   "Tenant Name",
+								Aliases: []string{"n"},
+							},
+						},
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							return achim.SetDefaultTenant(cmd.String("name"), tenantsFilePath())
+						},
 					},
 					{
 						Name: "remove",
@@ -183,4 +193,12 @@ func main() {
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
+}
+
+func tenantsFilePath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%s%c%s", home, os.PathSeparator, "achim.json")
 }
