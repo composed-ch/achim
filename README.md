@@ -1,6 +1,6 @@
 # achim
 
-Advanced Cloud Hyperscaling Infrastructure Manager (reimplementation in Go) using the [Cobra](https://github.com/spf13/cobra) and [Egoscale](https://github.com/exoscale/egoscale) libraries.
+Advanced Cloud Hyperscaling Infrastructure Manager (reimplementation in Go) using the [urfave/cli](https://cli.urfave.org/) and [Egoscale](https://github.com/exoscale/egoscale) libraries.
 
 ## Status
 
