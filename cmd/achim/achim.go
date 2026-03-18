@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/composed-ch/achim"
+	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/urfave/cli/v3"
 )
 
@@ -45,10 +46,18 @@ func main() {
 				},
 			},
 			{
-				Name: "images",
+				Name: "image",
 				Commands: []*cli.Command{
 					{
-						Name: "list",
+						Name:   "list",
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							// TODO: implement proper functionality (only list images)
+							client := ctx.Value("exo").(*v3.Client)
+							t, err := client.ListTemplates(ctx)
+							fmt.Println(t)
+							return err
+						},
 					},
 					{
 						Name: "list-types",
@@ -203,6 +212,18 @@ func main() {
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
+}
+
+func before(ctx context.Context, c *cli.Command) (context.Context, error) {
+	tenant, err := achim.GetDefaultTenant(tenantsFilePath())
+	if err != nil {
+		return nil, fmt.Errorf("get default tenant: %v", err)
+	}
+	client, err := tenant.Client()
+	if err != nil {
+		return nil, fmt.Errorf("get Exoscale client: %v", err)
+	}
+	return context.WithValue(ctx, "exo", client), nil
 }
 
 func tenantsFilePath() string {

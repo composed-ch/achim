@@ -44,7 +44,7 @@ This Go implementation is a port from the [Python implementation](https://github
     - dns
         - [ ] flush
         - [ ] sync (sync-dns)
-    - images
+    - image
         - [ ] list (list-images)
         - [ ] list-types (list-instance-types)
 

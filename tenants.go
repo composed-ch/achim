@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 const ConfigFilePerm = 0600
@@ -26,6 +29,13 @@ func (t Tenant) IsNonEmpty() bool {
 		strings.TrimSpace(t.Key) != "" &&
 		strings.TrimSpace(t.Secret) != "" &&
 		strings.TrimSpace(t.Zone) != ""
+}
+
+func (t Tenant) Client() (*v3.Client, error) {
+	endpointURL := fmt.Sprintf("https://api-%s.exoscale.com/v2", t.Zone)
+	endpoint := v3.ClientOptWithEndpoint(v3.Endpoint(endpointURL))
+	creds := credentials.NewStaticCredentials(t.Key, t.Secret)
+	return v3.NewClient(creds, endpoint)
 }
 
 func AddTenant(tenant Tenant, path string) error {
