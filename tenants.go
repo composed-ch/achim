@@ -80,7 +80,8 @@ func GetDefaultTenant(path string) (*Tenant, error) {
 		return nil, fmt.Errorf("read tenants: %v", err)
 	}
 	if tenant, ok := tenants.Tenants[tenants.Default]; !ok {
-		return nil, fmt.Errorf("retrieve default tenant %s from tenants: %v", tenants.Default, err)
+		return nil, fmt.Errorf("retrieve default tenant %s from tenants: %v",
+			tenants.Default, tenants)
 	} else {
 		return &tenant, nil
 	}
@@ -100,7 +101,6 @@ func SetDefaultTenant(name, path string) error {
 	return nil
 }
 
-// FIXME: removed tenant stays the default
 func RemoveTenant(name, path string) error {
 	tenants, err := ReadTenants(path)
 	if err != nil {
@@ -110,6 +110,13 @@ func RemoveTenant(name, path string) error {
 		return fmt.Errorf("no tenants %s in %s", name, path)
 	}
 	delete(tenants.Tenants, name)
+	if tenants.Default == name {
+		tenants.Default = ""
+		for k := range tenants.Tenants {
+			tenants.Default = k
+			break
+		}
+	}
 	saveTenants(tenants, path)
 	return nil
 }

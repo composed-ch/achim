@@ -124,14 +124,14 @@ func TestAddAndRemoveTenants(t *testing.T) {
 	if err := AddTenant(two, filepath); err != nil {
 		t.Fatalf("add tenant %v: %v\n", two, err)
 	}
-	if err := RemoveTenant(two.Name, filepath); err != nil {
-		t.Fatalf("remove tenant %s: %v\n", two.Name, err)
+	if err := RemoveTenant(one.Name, filepath); err != nil {
+		t.Fatalf("remove tenant %s: %v\n", one.Name, err)
 	}
 	tenant, err := GetDefaultTenant(filepath)
 	if err != nil {
 		t.Fatalf("get default tenant: %v\n", err)
 	}
-	if tenant.Name == two.Name {
+	if tenant.Name == one.Name {
 		t.Fatalf("default tenant %s was removed", tenant.Name)
 	}
 	if err := RemoveTenant("phony", filepath); err == nil {
@@ -145,11 +145,11 @@ func TestAddAndRemoveTenants(t *testing.T) {
 	if len(tenants.Tenants) != 1 {
 		t.Fatalf("expected one remaining tenant, has %d\n", len(tenants.Tenants))
 	}
-	if tenants.Default != one.Name {
-		t.Fatalf("expected default tenant to be %s, was %s\n", one.Name, tenants.Default)
+	if tenants.Default != two.Name {
+		t.Fatalf("expected default tenant to be %s, was %s\n", two.Name, tenants.Default)
 	}
-	if err := RemoveTenant(one.Name, filepath); err != nil {
-		t.Fatalf("remove tenant %s: %v\n", one.Name, err)
+	if err := RemoveTenant(two.Name, filepath); err != nil {
+		t.Fatalf("remove tenant %s: %v\n", two.Name, err)
 	}
 }
 
