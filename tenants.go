@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 const ConfigFilePerm = 0600
@@ -20,7 +21,17 @@ type Tenant struct {
 	Zone   string `json:"zone"`
 }
 
+func (t Tenant) IsNonEmpty() bool {
+	return strings.TrimSpace(t.Name) != "" &&
+		strings.TrimSpace(t.Key) != "" &&
+		strings.TrimSpace(t.Secret) != "" &&
+		strings.TrimSpace(t.Zone) != ""
+}
+
 func AddTenant(tenant Tenant, path string) error {
+	if !tenant.IsNonEmpty() {
+		return fmt.Errorf("tenant %v lacks mandatory information", tenant)
+	}
 	existing, err := ReadTenants(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "no tenants under %s, creating new tenants file\n", path)
@@ -86,6 +97,19 @@ func SetDefaultTenant(name, path string) error {
 		tenants.Default = name
 		return saveTenants(tenants, path)
 	}
+	return nil
+}
+
+func RemoveTenant(name, path string) error {
+	tenants, err := ReadTenants(path)
+	if err != nil {
+		return fmt.Errorf("read tenants from %s: %v", path, err)
+	}
+	if _, ok := tenants.Tenants[name]; !ok {
+		return fmt.Errorf("no tenants %s in %s", name, path)
+	}
+	delete(tenants.Tenants, name)
+	saveTenants(tenants, path)
 	return nil
 }
 

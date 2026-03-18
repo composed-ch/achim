@@ -184,6 +184,16 @@ func main() {
 					},
 					{
 						Name: "remove",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "name",
+								Usage:   "Tenant Name",
+								Aliases: []string{"n"},
+							},
+						},
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							return achim.RemoveTenant(cmd.String("name"), tenantsFilePath())
+						},
 					},
 				},
 			},
@@ -200,5 +210,5 @@ func tenantsFilePath() string {
 	if err != nil {
 		panic(err)
 	}
-	return fmt.Sprintf("%s%c%s", home, os.PathSeparator, "achim.json")
+	return fmt.Sprintf("%s%c%s", home, os.PathSeparator, ".achim.json")
 }
