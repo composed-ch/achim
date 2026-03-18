@@ -100,6 +100,7 @@ func SetDefaultTenant(name, path string) error {
 	return nil
 }
 
+// FIXME: removed tenant stays the default
 func RemoveTenant(name, path string) error {
 	tenants, err := ReadTenants(path)
 	if err != nil {
