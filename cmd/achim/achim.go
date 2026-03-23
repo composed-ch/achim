@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/composed-ch/achim"
-	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/urfave/cli/v3"
 )
 
@@ -49,14 +48,25 @@ func main() {
 				Name: "image",
 				Commands: []*cli.Command{
 					{
-						Name:   "list",
+						Name: "list",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "contains",
+								Usage:   "Filter by Image Name",
+								Aliases: []string{"c"},
+							},
+						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
-							// TODO: implement proper functionality (only list images)
-							client := ctx.Value("exo").(*v3.Client)
-							t, err := client.ListTemplates(ctx)
-							fmt.Println(t)
-							return err
+							contains := c.String("contains")
+							images, err := achim.ListImages(ctx, contains)
+							if err != nil {
+								return fmt.Errorf(`list images containing "%s": %v`, contains, err)
+							}
+							for _, image := range images {
+								fmt.Println(image)
+							}
+							return nil
 						},
 					},
 					{
@@ -149,24 +159,28 @@ func main() {
 						Name: "add",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
-								Name:    "name",
-								Usage:   "Tenant Name",
-								Aliases: []string{"n"},
+								Name:     "name",
+								Usage:    "Tenant Name",
+								Aliases:  []string{"n"},
+								Required: true,
 							},
 							&cli.StringFlag{
-								Name:    "key",
-								Usage:   "Exoscale API Key",
-								Aliases: []string{"k"},
+								Name:     "key",
+								Usage:    "Exoscale API Key",
+								Aliases:  []string{"k"},
+								Required: true,
 							},
 							&cli.StringFlag{
-								Name:    "secret",
-								Usage:   "Exoscale API Secret",
-								Aliases: []string{"s"},
+								Name:     "secret",
+								Usage:    "Exoscale API Secret",
+								Aliases:  []string{"s"},
+								Required: true,
 							},
 							&cli.StringFlag{
-								Name:    "zone",
-								Usage:   "Exoscale Zone",
-								Aliases: []string{"z"},
+								Name:     "zone",
+								Usage:    "Exoscale Zone",
+								Aliases:  []string{"z"},
+								Required: true,
 							},
 						},
 						Action: func(ctx context.Context, cmd *cli.Command) error {

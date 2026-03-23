@@ -70,6 +70,7 @@ func GetTenant(name, path string) (*Tenant, error) {
 }
 
 func ReadTenants(path string) (*TenantFile, error) {
+	// TODO: warn if file mode != 0600
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read tenants from %s: %v", path, err)

@@ -10,7 +10,7 @@ This Go implementation is a port from the [Python implementation](https://github
     - tenant
         - [x] add ([new])
         - [x] default ([new])
-        - [ ] remove ([new])
+        - [x] remove ([new])
     - instance
         - [ ] create (create-instance)
         - [ ] check (check-state)
@@ -45,6 +45,6 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] flush
         - [ ] sync (sync-dns)
     - image
-        - [ ] list (list-images)
+        - [x] list (list-images)
         - [ ] list-types (list-instance-types)
 
