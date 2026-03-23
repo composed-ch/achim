@@ -14,16 +14,17 @@ This Go implementation is a port from the [Python implementation](https://github
     - instance
         - [ ] create (create-instance)
         - [ ] check (check-state)
-        - [ ] protect
         - [ ] deprotect
         - [ ] destroy
         - [ ] label (label-all-instances)
         - [ ] list (list-instances)
         - [ ] probe
+        - [ ] protect
         - [ ] resize (resize-disk)
         - [ ] scale (scale-instance)
         - [ ] start
         - [ ] stop
+        - [ ] types (list-instance-types)
     - group
         - [ ] create (create-group)
         - [ ] export-overview (export-group-overview)
@@ -46,5 +47,4 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] sync (sync-dns)
     - image
         - [x] list (list-images)
-        - [ ] list-types (list-instance-types)
 
