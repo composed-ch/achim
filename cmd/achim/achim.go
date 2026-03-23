@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -112,6 +113,27 @@ func main() {
 					},
 					{
 						Name: "types",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "family",
+								Usage:   "Instance Type Family",
+								Aliases: []string{"f"},
+								Value:   "standard",
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							family := c.String("family")
+							types, err := achim.ListInstanceTypes(ctx, family)
+							if err != nil {
+								return fmt.Errorf("list instance types: %v", err)
+							}
+							for _, t := range types {
+								out, _ := json.Marshal(t)
+								fmt.Println(string(out))
+							}
+							return nil
+						},
 					},
 				},
 			},
