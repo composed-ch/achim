@@ -69,9 +69,6 @@ func main() {
 							return nil
 						},
 					},
-					{
-						Name: "list-types",
-					},
 				},
 			},
 			{
@@ -112,6 +109,9 @@ func main() {
 					},
 					{
 						Name: "stop",
+					},
+					{
+						Name: "types",
 					},
 				},
 			},
