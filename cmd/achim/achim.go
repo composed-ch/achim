@@ -104,7 +104,7 @@ func main() {
 								return fmt.Errorf(`list instances by "%s": %w`, by, err)
 							}
 							for _, instance := range instances {
-								fmt.Println(instance)
+								fmt.Println(achim.FormatInstance(instance))
 							}
 							return nil
 						},
