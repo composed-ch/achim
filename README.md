@@ -47,4 +47,5 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] sync (sync-dns)
     - image
         - [x] list (list-images)
-
+- other tasks
+    - [ ] replace `%v` with `%w` for proper error wrapping
