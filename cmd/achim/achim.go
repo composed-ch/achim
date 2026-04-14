@@ -12,7 +12,8 @@ import (
 
 func main() {
 	cmd := &cli.Command{
-		Name: "achim",
+		Name:  "achim",
+		Usage: "Advanced Cloud Hyperscaler Infrastructure Manager",
 		Commands: []*cli.Command{
 			{
 				Name: "dns",
