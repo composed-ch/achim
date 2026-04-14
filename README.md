@@ -17,7 +17,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] deprotect
         - [ ] destroy
         - [ ] label (label-all-instances)
-        - [ ] list (list-instances)
+        - [x] list (list-instances)
         - [ ] probe
         - [ ] protect
         - [ ] resize (resize-disk)
