@@ -11,15 +11,42 @@ func FormatInstance(instance v3.Instance) string {
 	return fmt.Sprintf("%-40s %-32s %15s", instance.ID, instance.Name, instance.PublicIP)
 }
 
-func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
-	exo := ctx.Value("exo").(*v3.Client)
-	if by != "" {
-		selectors, err := ParseSelector(by)
-		fmt.Println(selectors)
-		if err != nil {
-			return nil, fmt.Errorf(`parse --by "%s": %w`, by, err)
+func FilterInstances(instances []v3.Instance, by string) ([]v3.Instance, error) {
+	if by == "" {
+		return instances, nil
+	}
+	selectors, err := ParseSelector(by)
+	if err != nil {
+		return nil, fmt.Errorf(`parse --by "%s": %w`, by, err)
+	}
+	filtered := make([]v3.Instance, 0)
+	for _, instance := range instances {
+		retain := true
+		for _, selector := range selectors {
+			if selector.Label == "name" {
+				if instance.Name != selector.Value {
+					retain = false
+					break
+				}
+			} else {
+				if value, ok := instance.Labels[selector.Label]; !ok {
+					retain = false
+					break
+				} else if value != selector.Value {
+					retain = false
+					break
+				}
+			}
+		}
+		if retain {
+			filtered = append(filtered, instance)
 		}
 	}
+	return filtered, nil
+}
+
+func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
+	exo := ctx.Value("exo").(*v3.Client)
 	result, err := exo.ListInstances(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("list instances: %w", err)
@@ -31,6 +58,10 @@ func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
 			return nil, fmt.Errorf(`get instance by ID "%s": %w`, item.ID, err)
 		}
 		instances = append(instances, *instance)
+	}
+	instances, err = FilterInstances(instances, by)
+	if err != nil {
+		return nil, fmt.Errorf("filter instances: %w", err)
 	}
 	return instances, nil
 }
