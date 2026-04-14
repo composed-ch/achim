@@ -7,6 +7,10 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
+func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
+	return nil, nil
+}
+
 func ListInstanceTypes(ctx context.Context, family string) ([]v3.InstanceType, error) {
 	exo := ctx.Value("exo").(*v3.Client)
 	res, err := exo.ListInstanceTypes(ctx)

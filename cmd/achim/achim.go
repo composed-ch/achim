@@ -89,6 +89,25 @@ func main() {
 					},
 					{
 						Name: "list",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "by",
+								Usage:   "Filter by Label/Value Selector",
+								Aliases: []string{"b"},
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							instances, err := achim.ListInstances(ctx, by)
+							if err != nil {
+								return fmt.Errorf(`list instances by "%s": %w`, by, &err)
+							}
+							for _, instance := range instances {
+								fmt.Println(instance)
+							}
+							return nil
+						},
 					},
 					{
 						Name: "label",
