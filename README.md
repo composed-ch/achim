@@ -24,7 +24,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] scale (scale-instance)
         - [ ] start
         - [ ] stop
-        - [ ] types (list-instance-types)
+        - [x] type (list-instance-types)
     - group
         - [ ] create (create-group)
         - [ ] export-overview (export-group-overview)

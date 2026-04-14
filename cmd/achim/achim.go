@@ -112,7 +112,7 @@ func main() {
 						Name: "stop",
 					},
 					{
-						Name: "types",
+						Name: "type",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:    "family",
