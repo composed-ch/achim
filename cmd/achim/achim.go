@@ -101,7 +101,7 @@ func main() {
 							by := c.String("by")
 							instances, err := achim.ListInstances(ctx, by)
 							if err != nil {
-								return fmt.Errorf(`list instances by "%s": %w`, by, &err)
+								return fmt.Errorf(`list instances by "%s": %w`, by, err)
 							}
 							for _, instance := range instances {
 								fmt.Println(instance)
