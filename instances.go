@@ -108,7 +108,7 @@ func filterInstances(instances []v3.Instance, by string) ([]v3.Instance, error) 
 	if by == "" {
 		return instances, nil
 	}
-	selectors, err := ParseSelector(by)
+	selectors, err := ParseLabels(by)
 	if err != nil {
 		return nil, fmt.Errorf(`parse --by "%s": %w`, by, err)
 	}
@@ -116,13 +116,13 @@ func filterInstances(instances []v3.Instance, by string) ([]v3.Instance, error) 
 	for _, instance := range instances {
 		retain := true
 		for _, selector := range selectors {
-			if selector.Label == "name" {
+			if selector.Key == "name" {
 				if instance.Name != selector.Value {
 					retain = false
 					break
 				}
 			} else {
-				if value, ok := instance.Labels[selector.Label]; !ok {
+				if value, ok := instance.Labels[selector.Key]; !ok {
 					retain = false
 					break
 				} else if value != selector.Value {

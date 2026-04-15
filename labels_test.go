@@ -7,26 +7,26 @@ import (
 
 var tests = []struct {
 	By       string
-	Expected []Selector
+	Expected []Label
 }{
 	{
 		"foo=bar",
-		[]Selector{
+		[]Label{
 			{"foo", "bar"},
 		},
 	},
 	{
 		"foo=bar,qux=baz",
-		[]Selector{
+		[]Label{
 			{"foo", "bar"},
 			{"qux", "baz"},
 		},
 	},
 }
 
-func TestParseSelectors(t *testing.T) {
+func TestParseLabels(t *testing.T) {
 	for _, test := range tests {
-		actual, err := ParseSelector(test.By)
+		actual, err := ParseLabels(test.By)
 		if err != nil {
 			t.Errorf(`parse by "%s": %v\n`, test.By, err)
 		}

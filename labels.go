@@ -5,21 +5,21 @@ import (
 	"strings"
 )
 
-type Selector struct {
-	Label string
+type Label struct {
+	Key   string
 	Value string
 }
 
-func ParseSelector(by string) ([]Selector, error) {
-	pairs := strings.Split(by, ",")
-	selectors := make([]Selector, len(pairs))
+func ParseLabels(raw string) ([]Label, error) {
+	pairs := strings.Split(raw, ",")
+	selectors := make([]Label, len(pairs))
 	for i, pair := range pairs {
 		parts := strings.Split(pair, "=")
 		if len(parts) != 2 {
 			return nil, fmt.Errorf(`split selector "%s" by '='`, pair)
 		}
-		selectors[i] = Selector{
-			Label: parts[0],
+		selectors[i] = Label{
+			Key:   parts[0],
 			Value: parts[1],
 		}
 	}
