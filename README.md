@@ -14,12 +14,12 @@ This Go implementation is a port from the [Python implementation](https://github
     - instance
         - [ ] create (create-instance)
         - [ ] check (check-state)
-        - [ ] deprotect
+        - [x] deprotect
         - [ ] destroy
-        - [ ] label (label-all-instances)
+        - [x] label (label-all-instances)
         - [x] list (list-instances)
         - [ ] probe
-        - [ ] protect
+        - [x] protect
         - [ ] resize (resize-disk)
         - [ ] scale (scale-instance)
         - [ ] start

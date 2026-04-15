@@ -55,13 +55,44 @@ func LabelInstances(ctx context.Context, label, value, by string) error {
 		labels := make(map[string]string, 0)
 		maps.Copy(labels, instance.Labels)
 		labels[label] = value
-		exo.UpdateInstance(ctx, instance.ID, v3.UpdateInstanceRequest{Labels: labels})
+		update := v3.UpdateInstanceRequest{Labels: labels}
+		if _, err := exo.UpdateInstance(ctx, instance.ID, update); err != nil {
+			return fmt.Errorf(`label instance %s: %w`, instance.ID, err)
+		}
 	}
 	return nil
 }
 
+func ProtectInstances(ctx context.Context, by string) error {
+	return changeInstanceProtection(ctx, by, true)
+}
+
+func DeprotectInstances(ctx context.Context, by string) error {
+	return changeInstanceProtection(ctx, by, false)
+}
+
 func FormatInstance(instance v3.Instance) string {
 	return fmt.Sprintf("%-40s %-32s %15s %-10s", instance.ID, instance.Name, instance.PublicIP, instance.State)
+}
+
+func changeInstanceProtection(ctx context.Context, by string, protect bool) error {
+	exo := ctx.Value("exo").(*v3.Client)
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf(`list instances to change protection to %v: %w`, protect, err)
+	}
+	for _, instance := range instances {
+		if protect {
+			if _, err := exo.AddInstanceProtection(ctx, instance.ID); err != nil {
+				return fmt.Errorf(`protect instance %s: %w`, instance.ID, err)
+			}
+		} else {
+			if _, err := exo.RemoveInstanceProtection(ctx, instance.ID); err != nil {
+				return fmt.Errorf(`deprotect instance %s: %w`, instance.ID, err)
+			}
+		}
+	}
+	return nil
 }
 
 func getInstanceByID(ctx context.Context, id v3.UUID) (*v3.Instance, error) {

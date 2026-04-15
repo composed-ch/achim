@@ -92,7 +92,16 @@ func main() {
 						Name: "create",
 					},
 					{
-						Name: "deprotect",
+						Name:  "deprotect",
+						Usage: "remove instance protection",
+						Flags: []cli.Flag{
+							byFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							return achim.DeprotectInstances(ctx, by)
+						},
 					},
 					{
 						Name: "destroy",
@@ -120,7 +129,6 @@ func main() {
 						Name:  "label",
 						Usage: "add a label to multiple instances",
 						Flags: []cli.Flag{
-							byFlag,
 							&cli.StringFlag{
 								Name:     "label",
 								Required: true,
@@ -129,6 +137,7 @@ func main() {
 								Name:     "value",
 								Required: true,
 							},
+							byFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -142,7 +151,16 @@ func main() {
 						Name: "probe",
 					},
 					{
-						Name: "protect",
+						Name:  "protect",
+						Usage: "add instance protection",
+						Flags: []cli.Flag{
+							byFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							return achim.ProtectInstances(ctx, by)
+						},
 					},
 					{
 						Name: "resize",
