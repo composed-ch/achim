@@ -47,14 +47,16 @@ func main() {
 				},
 			},
 			{
-				Name: "image",
+				Name:  "image",
+				Usage: "information on available images",
 				Commands: []*cli.Command{
 					{
-						Name: "list",
+						Name:  "list",
+						Usage: "list available images",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:    "contains",
-								Usage:   "Filter by Image Name",
+								Usage:   "filter by image name",
 								Aliases: []string{"c"},
 							},
 						},
@@ -74,7 +76,8 @@ func main() {
 				},
 			},
 			{
-				Name: "instance",
+				Name:  "instance",
+				Usage: "manage compute instances",
 				Commands: []*cli.Command{
 					{
 						Name: "check",
@@ -89,11 +92,12 @@ func main() {
 						Name: "destroy",
 					},
 					{
-						Name: "list",
+						Name:  "list",
+						Usage: "list instances",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:    "by",
-								Usage:   "Filter by Label/Value Selector",
+								Usage:   "filter by label/value selector",
 								Aliases: []string{"b"},
 							},
 						},
@@ -111,7 +115,8 @@ func main() {
 						},
 					},
 					{
-						Name: "label",
+						Name:  "label",
+						Usage: "add a label to multiple instances",
 					},
 					{
 						Name: "probe",
@@ -132,11 +137,12 @@ func main() {
 						Name: "stop",
 					},
 					{
-						Name: "type",
+						Name:  "type",
+						Usage: "list instance types",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:    "family",
-								Usage:   "Instance Type Family",
+								Usage:   "instance type family",
 								Aliases: []string{"f"},
 								Value:   "standard",
 							},
@@ -198,29 +204,30 @@ func main() {
 				Name: "tenant",
 				Commands: []*cli.Command{
 					{
-						Name: "add",
+						Name:  "add",
+						Usage: "add a tenant",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:     "name",
-								Usage:    "Tenant Name",
+								Usage:    "tenant name",
 								Aliases:  []string{"n"},
 								Required: true,
 							},
 							&cli.StringFlag{
 								Name:     "key",
-								Usage:    "Exoscale API Key",
+								Usage:    "Exoscale API key",
 								Aliases:  []string{"k"},
 								Required: true,
 							},
 							&cli.StringFlag{
 								Name:     "secret",
-								Usage:    "Exoscale API Secret",
+								Usage:    "Exoscale API secret",
 								Aliases:  []string{"s"},
 								Required: true,
 							},
 							&cli.StringFlag{
 								Name:     "zone",
-								Usage:    "Exoscale Zone",
+								Usage:    "Exoscale zone",
 								Aliases:  []string{"z"},
 								Required: true,
 							},
@@ -235,11 +242,12 @@ func main() {
 						},
 					},
 					{
-						Name: "default",
+						Name:  "default",
+						Usage: "set the default tenant",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:    "name",
-								Usage:   "Tenant Name",
+								Usage:   "tenant name",
 								Aliases: []string{"n"},
 							},
 						},
@@ -248,11 +256,12 @@ func main() {
 						},
 					},
 					{
-						Name: "remove",
+						Name:  "remove",
+						Usage: "remove a tenant",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:    "name",
-								Usage:   "Tenant Name",
+								Usage:   "Tenant name",
 								Aliases: []string{"n"},
 							},
 						},
