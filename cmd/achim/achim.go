@@ -10,6 +10,12 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+var byFlag = &cli.StringFlag{
+	Name:    "by",
+	Usage:   "filter by label/value selector",
+	Aliases: []string{"b"},
+}
+
 func main() {
 	cmd := &cli.Command{
 		Name:  "achim",
@@ -95,11 +101,7 @@ func main() {
 						Name:  "list",
 						Usage: "list instances",
 						Flags: []cli.Flag{
-							&cli.StringFlag{
-								Name:    "by",
-								Usage:   "filter by label/value selector",
-								Aliases: []string{"b"},
-							},
+							byFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -117,6 +119,24 @@ func main() {
 					{
 						Name:  "label",
 						Usage: "add a label to multiple instances",
+						Flags: []cli.Flag{
+							byFlag,
+							&cli.StringFlag{
+								Name:     "label",
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "value",
+								Required: true,
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							label := c.String("label")
+							value := c.String("value")
+							by := c.String("by")
+							return achim.LabelInstances(ctx, label, value, by)
+						},
 					},
 					{
 						Name: "probe",
