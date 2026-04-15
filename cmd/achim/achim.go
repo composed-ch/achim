@@ -12,7 +12,7 @@ import (
 
 var byFlag = &cli.StringFlag{
 	Name:    "by",
-	Usage:   "filter by label/value selector",
+	Usage:   "filter by label/value selector, e.g. foo=bar,qux=baz",
 	Aliases: []string{"b"},
 }
 
@@ -89,7 +89,50 @@ func main() {
 						Name: "check",
 					},
 					{
-						Name: "create",
+						Name:  "create",
+						Usage: "create a new instance",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "name",
+								Usage:    "instance name",
+								Aliases:  []string{"n"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "key",
+								Usage:    "name of the SSH key",
+								Aliases:  []string{"k"},
+								Required: true,
+							},
+							&cli.BoolFlag{
+								Name:     "autostart",
+								Usage:    "whether or not to automatically start the instance",
+								Aliases:  []string{"a"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "image",
+								Usage:    "full image name (output of `achim image list` command)",
+								Aliases:  []string{"i"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "size",
+								Usage:    "instance size (size field from output of `achim instance type` command)",
+								Aliases:  []string{"s"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:    "labels",
+								Usage:   "labels as key/value pairs, e.g. foo=bar,qux=baz",
+								Aliases: []string{"l"},
+							},
+							// TODO: --cloud-init/-c flag for cloud init file
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							return nil
+						},
 					},
 					{
 						Name:  "deprotect",
