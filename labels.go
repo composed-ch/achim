@@ -25,3 +25,11 @@ func ParseLabels(raw string) ([]Label, error) {
 	}
 	return selectors, nil
 }
+
+func AsMap(labels []Label) map[string]string {
+	m := make(map[string]string)
+	for _, l := range labels {
+		m[l.Key] = l.Value
+	}
+	return m
+}

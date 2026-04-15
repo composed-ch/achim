@@ -131,7 +131,14 @@ func main() {
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
-							return nil
+							return achim.CreateInstance(ctx, achim.NewInstanceParams{
+								Name:      c.String("name"),
+								Key:       c.String("key"),
+								Autostart: c.Bool("autostart"),
+								Image:     c.String("image"),
+								Size:      c.String("size"),
+								Labels:    c.String("labels"),
+							})
 						},
 					},
 					{

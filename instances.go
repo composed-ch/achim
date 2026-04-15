@@ -8,6 +8,44 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
+type NewInstanceParams struct {
+	Name      string
+	Key       string
+	Autostart bool
+	Image     string
+	Size      string
+	Labels    string
+}
+
+func CreateInstance(ctx context.Context, params NewInstanceParams) error {
+	exo := ctx.Value("exo").(*v3.Client)
+	labels, err := ParseLabels(params.Labels)
+	if err != nil {
+		return fmt.Errorf("parse labels: %w", err)
+	}
+	existingInstances, err := ListInstances(ctx, "")
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	for _, instance := range existingInstances {
+		if instance.Name == params.Name {
+			return fmt.Errorf(`instance with name "%s" already exists`, params.Name)
+		}
+	}
+	_, err = exo.CreateInstance(ctx, v3.CreateInstanceRequest{
+		AutoStart:    &params.Autostart,
+		InstanceType: &v3.InstanceType{}, // FIXME
+		Labels:       AsMap(labels),
+		Name:         params.Name,
+		SSHKey:       &v3.SSHKey{},   // FIXME
+		Template:     &v3.Template{}, // FIXME
+	})
+	if err != nil {
+		return fmt.Errorf("create instance: %w", err)
+	}
+	return nil
+}
+
 func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
 	exo := ctx.Value("exo").(*v3.Client)
 	result, err := exo.ListInstances(ctx)
