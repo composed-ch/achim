@@ -19,7 +19,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] destroy
         - [x] label (label-all-instances)
         - [x] list (list-instances)
-        - [ ] probe
+        - [x] probe
         - [x] protect
         - [x] ~~resize~~ embiggen (resize-disk)
         - [x] scale (scale-instance)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"net/http"
 	"slices"
 
 	v3 "github.com/exoscale/egoscale/v3"
@@ -226,6 +227,27 @@ func StopInstances(ctx context.Context, by string) error {
 
 func FormatInstance(instance v3.Instance) string {
 	return fmt.Sprintf("%-40s %-32s %15s %-10s", instance.ID, instance.Name, instance.PublicIP, instance.State)
+}
+
+func ProbeInstances(ctx context.Context, by, suffix string, secure bool) error {
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	for _, instance := range instances {
+		proto := "http"
+		if secure {
+			proto = "https"
+		}
+		url := fmt.Sprintf("%s://%s/%s", proto, instance.PublicIP, suffix)
+		res, err := http.Get(url)
+		if err != nil {
+			fmt.Printf("%-32s GET %s\tERR\n", instance.Name, url)
+			continue
+		}
+		fmt.Printf("%-32s GET %s\t%d\n", instance.Name, url, res.StatusCode)
+	}
+	return nil
 }
 
 func changeInstanceProtection(ctx context.Context, by string, protect bool) error {

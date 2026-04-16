@@ -214,7 +214,26 @@ func main() {
 						},
 					},
 					{
-						Name: "probe",
+						Name:  "probe",
+						Usage: "make HTTP(S) request to instance",
+						Flags: []cli.Flag{
+							byFlag,
+							&cli.StringFlag{
+								Name:  "suffix",
+								Usage: "URL suffix, e.g. index.html",
+							},
+							&cli.BoolFlag{
+								Name:  "secure",
+								Usage: "whether or not to use TLS (HTTPS)",
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							suffix := c.String("suffix")
+							secure := c.Bool("secure")
+							return achim.ProbeInstances(ctx, by, suffix, secure)
+						},
 					},
 					{
 						Name:  "protect",
