@@ -11,9 +11,10 @@ import (
 )
 
 var byFlag = &cli.StringFlag{
-	Name:    "by",
-	Usage:   "filter by label/value selector, e.g. foo=bar,qux=baz",
-	Aliases: []string{"b"},
+	Name:     "by",
+	Usage:    "filter by label/value selector, e.g. foo=bar,qux=baz",
+	Aliases:  []string{"b"},
+	Required: true,
 }
 
 func main() {
@@ -228,7 +229,22 @@ func main() {
 						},
 					},
 					{
-						Name: "resize",
+						Name:  "embiggen",
+						Usage: `make the disk of an instance lager ("embiggen" is a perfectly cromulent word)`,
+						Flags: []cli.Flag{
+							byFlag,
+							&cli.Int64Flag{
+								Name:    "size",
+								Usage:   "new disk size in GB",
+								Aliases: []string{"s"},
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							gb := c.Int64("size")
+							return achim.EmbiggenDisk(ctx, by, gb)
+						},
 					},
 					{
 						Name: "scale",

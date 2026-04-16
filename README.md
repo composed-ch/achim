@@ -21,7 +21,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] list (list-instances)
         - [ ] probe
         - [x] protect
-        - [ ] resize (resize-disk)
+        - [x] ~~resize~~ embiggen (resize-disk)
         - [ ] scale (scale-instance)
         - [x] start
         - [x] stop
@@ -49,4 +49,7 @@ This Go implementation is a port from the [Python implementation](https://github
     - image
         - [x] list (list-images)
 - other tasks
-    - [ ] replace `%v` with `%w` for proper error wrapping
+    - [ ] replace `%v` with `%w` everywhere for proper error wrapping
+    - [ ] consider `--verbose`/`-v` (or `--silent/-s`?) flag for certain commands
+        - alternative: `--dry`/`-d` run flag (what _would_ happen _if_?)
+        - instance create/destroy, start/stop, protect/deprotect, resize/scale

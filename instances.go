@@ -78,6 +78,32 @@ func DestroyInstances(ctx context.Context, by string) error {
 	return nil
 }
 
+func EmbiggenDisk(ctx context.Context, by string, gb int64) error {
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	exo := ctx.Value("exo").(*v3.Client)
+	for _, instance := range instances {
+		if instance.DiskSize > gb {
+			return fmt.Errorf(`instance %s "%s" disk size is %d GB; cannot shrink disk`,
+				instance.ID, instance.Name, instance.DiskSize)
+		}
+		if instance.State != v3.InstanceStateStopped {
+			return fmt.Errorf(`instance %s "%s" must be stopped but is %s`,
+				instance.ID, instance.Name, instance.State)
+		}
+		_, err := exo.ResizeInstanceDisk(ctx, instance.ID, v3.ResizeInstanceDiskRequest{
+			DiskSize: gb,
+		})
+		if err != nil {
+			return fmt.Errorf(`resize disk of instance %s "%s": %w`,
+				instance.ID, instance.Name, err)
+		}
+	}
+	return nil
+}
+
 func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
 	exo := ctx.Value("exo").(*v3.Client)
 	result, err := exo.ListInstances(ctx)
