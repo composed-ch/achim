@@ -63,6 +63,21 @@ func CreateInstance(ctx context.Context, params NewInstanceParams) error {
 	return nil
 }
 
+func DestroyInstances(ctx context.Context, by string) error {
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	exo := ctx.Value("exo").(*v3.Client)
+	for _, instance := range instances {
+		_, err := exo.DeleteInstance(ctx, instance.ID)
+		if err != nil {
+			return fmt.Errorf(`destroy instance "%s": %w`, instance.ID, err)
+		}
+	}
+	return nil
+}
+
 func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
 	exo := ctx.Value("exo").(*v3.Client)
 	result, err := exo.ListInstances(ctx)

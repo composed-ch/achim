@@ -151,7 +151,25 @@ func main() {
 						},
 					},
 					{
-						Name: "destroy",
+						Name:  "destroy",
+						Usage: "destroy instance",
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name:     "sure",
+								Usage:    "are you absolutely sure?",
+								Required: true,
+							},
+							byFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							sure := c.Bool("sure")
+							if !sure {
+								return fmt.Errorf(`you must be sure to destroy all instances by "%s"`, by)
+							}
+							return achim.DestroyInstances(ctx, by)
+						},
 					},
 					{
 						Name:  "list",
