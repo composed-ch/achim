@@ -23,8 +23,8 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] protect
         - [ ] resize (resize-disk)
         - [ ] scale (scale-instance)
-        - [ ] start
-        - [ ] stop
+        - [x] start
+        - [x] stop
         - [x] type (list-instance-types)
     - group
         - [ ] create (create-group)

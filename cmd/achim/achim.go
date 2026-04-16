@@ -219,10 +219,28 @@ func main() {
 						Name: "scale",
 					},
 					{
-						Name: "start",
+						Name:  "start",
+						Usage: "start instance",
+						Flags: []cli.Flag{
+							byFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							return achim.StartInstances(ctx, by)
+						},
 					},
 					{
-						Name: "stop",
+						Name:  "stop",
+						Usage: "stop instance",
+						Flags: []cli.Flag{
+							byFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							return achim.StopInstances(ctx, by)
+						},
 					},
 					{
 						Name:  "type",

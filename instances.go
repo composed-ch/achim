@@ -140,6 +140,14 @@ func DeprotectInstances(ctx context.Context, by string) error {
 	return changeInstanceProtection(ctx, by, false)
 }
 
+func StartInstances(ctx context.Context, by string) error {
+	return changeInstanceState(ctx, by, true)
+}
+
+func StopInstances(ctx context.Context, by string) error {
+	return changeInstanceState(ctx, by, false)
+}
+
 func FormatInstance(instance v3.Instance) string {
 	return fmt.Sprintf("%-40s %-32s %15s %-10s", instance.ID, instance.Name, instance.PublicIP, instance.State)
 }
@@ -158,6 +166,26 @@ func changeInstanceProtection(ctx context.Context, by string, protect bool) erro
 		} else {
 			if _, err := exo.RemoveInstanceProtection(ctx, instance.ID); err != nil {
 				return fmt.Errorf(`deprotect instance %s: %w`, instance.ID, err)
+			}
+		}
+	}
+	return nil
+}
+
+func changeInstanceState(ctx context.Context, by string, up bool) error {
+	exo := ctx.Value("exo").(*v3.Client)
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf(`list instances to change up state to %v: %w`, up, err)
+	}
+	for _, instance := range instances {
+		if up {
+			if _, err := exo.StartInstance(ctx, instance.ID, v3.StartInstanceRequest{}); err != nil {
+				return err
+			}
+		} else {
+			if _, err := exo.StopInstance(ctx, instance.ID); err != nil {
+				return err
 			}
 		}
 	}
