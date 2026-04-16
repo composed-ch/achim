@@ -86,9 +86,6 @@ func main() {
 				Usage: "manage compute instances",
 				Commands: []*cli.Command{
 					{
-						Name: "check",
-					},
-					{
 						Name:  "create",
 						Usage: "create a new instance",
 						Flags: []cli.Flag{
