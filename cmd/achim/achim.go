@@ -230,7 +230,7 @@ func main() {
 					},
 					{
 						Name:  "embiggen",
-						Usage: `make the disk of an instance lager ("embiggen" is a perfectly cromulent word)`,
+						Usage: `make the disk of an instance larger ("embiggen" is a perfectly cromulent word)`,
 						Flags: []cli.Flag{
 							byFlag,
 							&cli.Int64Flag{
@@ -247,7 +247,22 @@ func main() {
 						},
 					},
 					{
-						Name: "scale",
+						Name:  "scale",
+						Usage: "change the instance type to another size",
+						Flags: []cli.Flag{
+							byFlag,
+							&cli.StringFlag{
+								Name:    "size",
+								Usage:   "new instance size",
+								Aliases: []string{"s"},
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							size := c.String("size")
+							return achim.ScaleInstances(ctx, by, size)
+						},
 					},
 					{
 						Name:  "start",

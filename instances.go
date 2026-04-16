@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"slices"
 
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -99,6 +100,40 @@ func EmbiggenDisk(ctx context.Context, by string, gb int64) error {
 		if err != nil {
 			return fmt.Errorf(`resize disk of instance %s "%s": %w`,
 				instance.ID, instance.Name, err)
+		}
+	}
+	return nil
+}
+
+func ScaleInstances(ctx context.Context, by string, size string) error {
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	exo := ctx.Value("exo").(*v3.Client)
+	types, err := ListInstanceTypes(ctx, "standard")
+	if err != nil {
+		return fmt.Errorf("list standard instance types: %w", err)
+	}
+	allowedSizes := make(map[string]*v3.InstanceType, len(types))
+	for _, t := range types {
+		allowedSizes[string(t.Size)] = &t
+	}
+	if _, ok := allowedSizes[size]; !ok {
+		return fmt.Errorf(`size "%s" is not allowed, use any of %v`,
+			size, slices.Collect(maps.Keys(allowedSizes)))
+	}
+	for _, instance := range instances {
+		if instance.State != v3.InstanceStateStopped {
+			return fmt.Errorf(`instance %s "%s" must be stopped but is %s`,
+				instance.ID, instance.Name, instance.State)
+		}
+		_, err = exo.ScaleInstance(ctx, instance.ID, v3.ScaleInstanceRequest{
+			InstanceType: allowedSizes[size],
+		})
+		if err != nil {
+			return fmt.Errorf(`scale instance %s "%s" to size %s: %w`,
+				instance.ID, instance.Name, size, err)
 		}
 	}
 	return nil

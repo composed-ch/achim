@@ -22,7 +22,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] probe
         - [x] protect
         - [x] ~~resize~~ embiggen (resize-disk)
-        - [ ] scale (scale-instance)
+        - [x] scale (scale-instance)
         - [x] start
         - [x] stop
         - [x] type (list-instance-types)
