@@ -32,13 +32,30 @@ func CreateInstance(ctx context.Context, params NewInstanceParams) error {
 			return fmt.Errorf(`instance with name "%s" already exists`, params.Name)
 		}
 	}
+	template, err := GetTemplateByName(ctx, params.Image)
+	if err != nil {
+		return fmt.Errorf("find image: %w", err)
+	}
+	diskSizeGb := template.Size / (1024 * 1024 * 1024)
+	if diskSizeGb == 0 {
+		diskSizeGb = 10
+	}
+	instanceType, err := GetInstanceTypeBySize(ctx, params.Size)
+	if err != nil {
+		return fmt.Errorf("find instance type: %w", err)
+	}
+	sshKey, err := GetSSHKeyByName(ctx, params.Key)
+	if err != nil {
+		return fmt.Errorf("find SSH key: %w", err)
+	}
 	_, err = exo.CreateInstance(ctx, v3.CreateInstanceRequest{
 		AutoStart:    &params.Autostart,
-		InstanceType: &v3.InstanceType{}, // FIXME
+		DiskSize:     diskSizeGb,
+		InstanceType: instanceType,
 		Labels:       AsMap(labels),
 		Name:         params.Name,
-		SSHKey:       &v3.SSHKey{},   // FIXME
-		Template:     &v3.Template{}, // FIXME
+		SSHKey:       sshKey,
+		Template:     template,
 	})
 	if err != nil {
 		return fmt.Errorf("create instance: %w", err)
@@ -71,7 +88,7 @@ func ListInstanceTypes(ctx context.Context, family string) ([]v3.InstanceType, e
 	exo := ctx.Value("exo").(*v3.Client)
 	res, err := exo.ListInstanceTypes(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("list instance types: %v", err)
+		return nil, fmt.Errorf("list instance types: %w", err)
 	}
 	var result []v3.InstanceType
 	for _, it := range res.InstanceTypes {
@@ -81,6 +98,20 @@ func ListInstanceTypes(ctx context.Context, family string) ([]v3.InstanceType, e
 		result = append(result, it)
 	}
 	return result, nil
+}
+
+func GetInstanceTypeBySize(ctx context.Context, size string) (*v3.InstanceType, error) {
+	exo := ctx.Value("exo").(*v3.Client)
+	res, err := exo.ListInstanceTypes(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list instance types: %w", err)
+	}
+	for _, it := range res.InstanceTypes {
+		if string(it.Size) == size {
+			return &it, nil
+		}
+	}
+	return nil, fmt.Errorf(`no instance type for size "%s" found`, size)
 }
 
 func LabelInstances(ctx context.Context, label, value, by string) error {
