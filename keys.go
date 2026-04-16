@@ -18,5 +18,5 @@ func GetSSHKeyByName(ctx context.Context, name string) (*v3.SSHKey, error) {
 			return &key, nil
 		}
 	}
-	return nil, fmt.Errorf(`no SSH key for name "%s" found`)
+	return nil, fmt.Errorf(`no SSH key for name "%s" found`, name)
 }
