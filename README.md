@@ -14,7 +14,6 @@ This Go implementation is a port from the [Python implementation](https://github
     - instance
         - [x] create (create-instance)
             - [ ] handle cloud-init data
-        - ~~[ ] check (check-state)~~ (handled by list)
         - [x] deprotect
         - [x] destroy
         - [x] label (label-all-instances)
