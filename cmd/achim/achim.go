@@ -49,7 +49,15 @@ func main() {
 						Name: "export-playbook",
 					},
 					{
-						Name: "file-from-text",
+						Name:      "file-from-text",
+						Usage:     "generate a group YAML file from a list of email addresses",
+						ArgsUsage: "<input> <output>",
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							if cmd.Args().Len() != 2 {
+								return cli.ShowSubcommandHelp(cmd)
+							}
+							return achim.GroupFileFromText(cmd.Args().Get(0), cmd.Args().Get(1))
+						},
 					},
 				},
 			},
