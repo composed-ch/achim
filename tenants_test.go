@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime"
 	"testing"
 )
 
@@ -25,7 +26,7 @@ func TestAddFirstTenant(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stat %s: %v\n", path, err)
 	}
-	if info.Mode().Perm() != perm {
+	if runtime.GOOS != "windows" && info.Mode().Perm() != perm {
 		t.Fatalf("%s expected mode %o, got %o\n", path, perm, info.Mode().Perm())
 	}
 	tenantRetrieved, err := GetTenant("goachim", path)
