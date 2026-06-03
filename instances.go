@@ -20,49 +20,19 @@ type NewInstanceParams struct {
 }
 
 func CreateInstance(ctx context.Context, params NewInstanceParams) error {
-	exo := ctx.Value("exo").(*v3.Client)
-	labels, err := ParseLabels(params.Labels)
+	newInstancesParam := NewInstancesParam{
+		Names:     []string{params.Name},
+		Key:       params.Key,
+		Autostart: params.Autostart,
+		Image:     params.Image,
+		Size:      params.Size,
+		Labels:    params.Labels,
+	}
+	newInstanceGroup, err := newInstancesParam.Compile(ctx)
 	if err != nil {
-		return fmt.Errorf("parse labels: %w", err)
+		return fmt.Errorf("create instance %v: %w", params, err)
 	}
-	existingInstances, err := ListInstances(ctx, "")
-	if err != nil {
-		return fmt.Errorf("list instances: %w", err)
-	}
-	for _, instance := range existingInstances {
-		if instance.Name == params.Name {
-			return fmt.Errorf(`instance with name "%s" already exists`, params.Name)
-		}
-	}
-	template, err := GetTemplateByName(ctx, params.Image)
-	if err != nil {
-		return fmt.Errorf("find image: %w", err)
-	}
-	diskSizeGb := template.Size / (1024 * 1024 * 1024)
-	if diskSizeGb == 0 {
-		diskSizeGb = 10
-	}
-	instanceType, err := GetInstanceTypeBySize(ctx, params.Size)
-	if err != nil {
-		return fmt.Errorf("find instance type: %w", err)
-	}
-	sshKey, err := GetSSHKeyByName(ctx, params.Key)
-	if err != nil {
-		return fmt.Errorf("find SSH key: %w", err)
-	}
-	_, err = exo.CreateInstance(ctx, v3.CreateInstanceRequest{
-		AutoStart:    &params.Autostart,
-		DiskSize:     diskSizeGb,
-		InstanceType: instanceType,
-		Labels:       AsMap(labels),
-		Name:         params.Name,
-		SSHKey:       sshKey,
-		Template:     template,
-	})
-	if err != nil {
-		return fmt.Errorf("create instance: %w", err)
-	}
-	return nil
+	return newInstanceGroup.Create(ctx)
 }
 
 func DestroyInstances(ctx context.Context, by string) error {

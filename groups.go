@@ -70,8 +70,24 @@ func ParseGroupFile(yamlPath string) (*Group, error) {
 }
 
 func CreateGroup(ctx context.Context, params NewGroupParams) error {
-	fmt.Println(params)
-	return nil
+	group, err := ParseGroupFile(params.GroupFile)
+	if err != nil {
+		return fmt.Errorf("parse group file at %s: %w", params.GroupFile, err)
+	}
+	names := make([]string, len(group.Users))
+	for i, u := range group.Users {
+		names[i] = u.Name
+	}
+	newInstancesParam := NewInstancesParam{
+		Names:     names,
+		Key:       params.Key,
+		Autostart: params.Autostart,
+		Image:     params.Image,
+		Size:      params.Size,
+		Labels:    params.Labels,
+	}
+	newInstanceGroup, err := newInstancesParam.Compile(ctx)
+	return newInstanceGroup.Create(ctx)
 }
 
 func parseEmail(line string) (User, bool) {
