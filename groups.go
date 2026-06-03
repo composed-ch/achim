@@ -57,6 +57,18 @@ func GroupFileFromText(inputPath, outputPath string) error {
 	return nil
 }
 
+func ParseGroupFile(yamlPath string) (*Group, error) {
+	raw, err := os.ReadFile(yamlPath)
+	if err != nil {
+		return nil, fmt.Errorf(`read YAML from file "%s": %w`, yamlPath, err)
+	}
+	var group Group
+	if err = yaml.Unmarshal(raw, &group); err != nil {
+		return nil, fmt.Errorf(`parse YAML content \n%s\n: %w`, string(raw), err)
+	}
+	return &group, nil
+}
+
 func CreateGroup(ctx context.Context, params NewGroupParams) error {
 	fmt.Println(params)
 	return nil

@@ -1,8 +1,11 @@
 package achim
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -57,5 +60,38 @@ func TestGroupFileFromTextBlankLines(t *testing.T) {
 	}
 	if len(group.Users) != 2 {
 		t.Fatalf("expected 2 users (blank lines ignored), got %d", len(group.Users))
+	}
+}
+
+func TestParseGroupFile(t *testing.T) {
+	raw := `
+name: geeks
+users:
+  - email: alice_bobson@sluz.ch
+    name: alice_bobson
+    ssh-key: ""
+  - email: bob_allison@sluz.ch
+    name: bob_allison
+    ssh-key: ""
+  - email: mallory_malfaesence@sluz.ch
+    name: mallory_malfaesence
+    ssh-key: ""`
+	f, _ := os.CreateTemp(os.TempDir(), "groups")
+	rawBuf := bytes.NewBuffer([]byte(raw))
+	io.Copy(f, rawBuf)
+	group, err := ParseGroupFile(f.Name())
+	if err != nil {
+		t.Fatalf("parse group: %s", err)
+	}
+	if group.Name != "geeks" {
+		t.Errorf(`expected group name "geeks", got "%s"`, group.Name)
+	}
+	expectedUsers := []User{
+		{Email: "alice_bobson@sluz.ch", Name: "alice_bobson", SSHKey: ""},
+		{Email: "bob_allison@sluz.ch", Name: "bob_allison", SSHKey: ""},
+		{Email: "mallory_malfaesence@sluz.ch", Name: "mallory_malfaesence", SSHKey: ""},
+	}
+	if !slices.Equal(expectedUsers, group.Users) {
+		t.Errorf(`expectd users %v, got %v`, expectedUsers, group.Users)
 	}
 }
