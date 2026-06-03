@@ -76,6 +76,17 @@ func main() {
 								Aliases: []string{"l"},
 							},
 						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							return achim.CreateGroup(ctx, achim.NewGroupParams{
+								GroupFile: c.String("groupfile"),
+								Key:       c.String("key"),
+								Autostart: c.Bool("autostart"),
+								Image:     c.String("image"),
+								Size:      c.String("size"),
+								Labels:    c.String("labels"),
+							})
+						},
 					},
 					{
 						Name: "export-inventory",

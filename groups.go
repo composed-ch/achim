@@ -1,6 +1,7 @@
 package achim
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -19,6 +20,15 @@ type User struct {
 type Group struct {
 	Name  string `yaml:"name"`
 	Users []User `yaml:"users"`
+}
+
+type NewGroupParams struct {
+	GroupFile string
+	Key       string
+	Autostart bool
+	Image     string
+	Size      string
+	Labels    string
 }
 
 func GroupFileFromText(inputPath, outputPath string) error {
@@ -44,6 +54,11 @@ func GroupFileFromText(inputPath, outputPath string) error {
 	if err := os.WriteFile(outputPath, out, 0644); err != nil {
 		return fmt.Errorf("write output file: %w", err)
 	}
+	return nil
+}
+
+func CreateGroup(ctx context.Context, params NewGroupParams) error {
+	fmt.Println(params)
 	return nil
 }
 
