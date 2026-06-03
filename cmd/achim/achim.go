@@ -425,9 +425,10 @@ func main() {
 						Usage: "set the default tenant",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
-								Name:    "name",
-								Usage:   "tenant name",
-								Aliases: []string{"n"},
+								Name:     "name",
+								Usage:    "tenant name",
+								Aliases:  []string{"n"},
+								Required: true,
 							},
 						},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
