@@ -27,6 +27,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] type (list-instance-types)
     - group
         - [ ] create (create-group)
+            - [ ] handle cloud-init data
         - [ ] export-overview (export-group-overview)
         - [ ] export-inventory (export-inventory)
         - [ ] export-playbook (export-user-playbook)
