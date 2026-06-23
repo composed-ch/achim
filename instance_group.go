@@ -7,7 +7,6 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-// FIXME: use this one as a receiver; parsing the groups file is a client issue
 type NewInstancesParam struct {
 	Names     []string
 	Key       string
@@ -59,7 +58,7 @@ func (p *NewInstancesParam) Compile(ctx context.Context) (*InstanceGroup, error)
 		Template:     template,
 		InstanceType: instanceType,
 		DiskSizeGB:   diskSizeGb,
-		Labels:       labels, // FIXME: merge generic labels, e.g. "owner"
+		Labels:       labels,
 	}, nil
 }
 
@@ -76,11 +75,15 @@ type InstanceGroup struct {
 func (p *InstanceGroup) Create(ctx context.Context) error {
 	exo := ctx.Value("exo").(*v3.Client)
 	for _, name := range p.Names {
+		genericLabels := map[string]string{
+			// TODO: consider "name"
+			"owner": name,
+		}
 		_, err := exo.CreateInstance(ctx, v3.CreateInstanceRequest{
 			AutoStart:    &p.Autostart,
 			DiskSize:     p.DiskSizeGB,
 			InstanceType: p.InstanceType,
-			Labels:       AsMap(p.Labels),
+			Labels:       MergeMaps(AsMap(p.Labels), genericLabels),
 			Name:         name,
 			SSHKey:       p.Key,
 			Template:     p.Template,

@@ -84,7 +84,7 @@ func CreateGroup(ctx context.Context, params NewGroupParams) error {
 		Autostart: params.Autostart,
 		Image:     params.Image,
 		Size:      params.Size,
-		Labels:    params.Labels,
+		Labels:    fmt.Sprintf("%s,group=%s", params.Labels, group.Name),
 	}
 	newInstanceGroup, err := newInstancesParam.Compile(ctx)
 	if err != nil {
