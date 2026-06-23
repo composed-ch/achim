@@ -87,6 +87,9 @@ func CreateGroup(ctx context.Context, params NewGroupParams) error {
 		Labels:    params.Labels,
 	}
 	newInstanceGroup, err := newInstancesParam.Compile(ctx)
+	if err != nil {
+		return fmt.Errorf("create instances %v: %w", params, err)
+	}
 	return newInstanceGroup.Create(ctx)
 }
 
