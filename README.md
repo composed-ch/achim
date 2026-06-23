@@ -18,6 +18,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] destroy
         - [x] label (label-all-instances)
         - [x] list (list-instances)
+        - [ ] overview (export-group-overview)
         - [x] probe
         - [x] protect
         - [x] ~~resize~~ embiggen (resize-disk)
@@ -28,9 +29,10 @@ This Go implementation is a port from the [Python implementation](https://github
     - group
         - [x] create (create-group)
             - [ ] handle cloud-init data
-        - [ ] export-overview (export-group-overview)
         - [ ] export-inventory (export-inventory)
+            - TODO: part of instance or groujp?
         - [ ] export-playbook (export-user-playbook)
+            - TODO: part of instance or groujp?
         - [x] file-from-text
     - network
         - [ ] attach

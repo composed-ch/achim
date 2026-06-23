@@ -3,10 +3,13 @@ package achim
 import (
 	"context"
 	"fmt"
+	"html/template"
 	"maps"
 	"net/http"
+	"os"
 	"slices"
 
+	"github.com/composed-ch/achim/templates"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -197,6 +200,47 @@ func StopInstances(ctx context.Context, by string) error {
 
 func FormatInstance(instance v3.Instance) string {
 	return fmt.Sprintf("%-40s %-32s %15s %-10s", instance.ID, instance.Name, instance.PublicIP, instance.State)
+}
+
+func Overview(ctx context.Context, by, file string) error {
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	entries := make([]templates.OverviewEntry, len(instances))
+	for i, instance := range instances {
+		// TODO: get "owner" from labels
+		ip := instance.PublicIP.String()
+		entries[i] = templates.OverviewEntry{
+			Owner:      instance.Name, // TODO: use "owner" label instead?
+			HostName:   instance.Name,
+			IPAddress:  ip,
+			SSHCommand: fmt.Sprintf("ssh %s@%s", "user", ip), // TODO: use "owner" label instead?
+		}
+	}
+	data := templates.OverviewData{
+		Entries:   entries,
+		Selection: by,
+	}
+	tmpl, err := template.New("overview").Parse(templates.Overview)
+	if err != nil {
+		return fmt.Errorf("parse overview template: %w", err)
+	}
+	var html *os.File
+	if file != "" {
+		f, err := os.Create(file)
+		if err != nil {
+			return fmt.Errorf("create %s: %w", file, err)
+		}
+		defer f.Close()
+		html = f
+	} else {
+		html = os.Stdout
+	}
+	if err := tmpl.Execute(html, data); err != nil {
+		return fmt.Errorf("execute overview template: %w", err)
+	}
+	return nil
 }
 
 func ProbeInstances(ctx context.Context, by, suffix string, secure bool) error {

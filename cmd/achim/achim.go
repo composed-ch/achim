@@ -89,12 +89,11 @@ func main() {
 						},
 					},
 					{
+						// TODO: consider implementing this under instance
 						Name: "export-inventory",
 					},
 					{
-						Name: "export-overview",
-					},
-					{
+						// TODO: consider implementing this under instance
 						Name: "export-playbook",
 					},
 					{
@@ -268,6 +267,23 @@ func main() {
 							value := c.String("value")
 							by := c.String("by")
 							return achim.LabelInstances(ctx, label, value, by)
+						},
+					},
+					{
+						Name:  "overview",
+						Usage: "export HTML overview for instances matching selection",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "file",
+								Usage: "file path for HTML output (stdout if missing)",
+							},
+							byFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							file := c.String("file")
+							by := c.String("by")
+							return achim.Overview(ctx, by, file)
 						},
 					},
 					{
