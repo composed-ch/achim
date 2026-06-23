@@ -209,13 +209,18 @@ func Overview(ctx context.Context, by, file string) error {
 	}
 	entries := make([]templates.OverviewEntry, len(instances))
 	for i, instance := range instances {
-		// TODO: get "owner" from labels
+		var owner string
+		for k, v := range instance.Labels {
+			if k == "owner" {
+				owner = v
+			}
+		}
 		ip := instance.PublicIP.String()
 		entries[i] = templates.OverviewEntry{
-			Owner:      instance.Name, // TODO: use "owner" label instead?
+			Owner:      owner,
 			HostName:   instance.Name,
 			IPAddress:  ip,
-			SSHCommand: fmt.Sprintf("ssh %s@%s", "user", ip), // TODO: use "owner" label instead?
+			SSHCommand: fmt.Sprintf("ssh %s@%s", "user", ip),
 		}
 	}
 	data := templates.OverviewData{

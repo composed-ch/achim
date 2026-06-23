@@ -59,7 +59,7 @@ func (p *NewInstancesParam) Compile(ctx context.Context) (*InstanceGroup, error)
 		Template:     template,
 		InstanceType: instanceType,
 		DiskSizeGB:   diskSizeGb,
-		Labels:       labels,
+		Labels:       labels, // FIXME: merge generic labels, e.g. "owner"
 	}, nil
 }
 
