@@ -11,7 +11,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] add ([new])
         - [x] default ([new])
         - [x] remove ([new])
-    - instance
+    - instance (high priority)
         - [x] create (create-instance)
             - [ ] handle cloud-init data
         - [x] deprotect
@@ -26,28 +26,28 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] start
         - [x] stop
         - [x] type (list-instance-types)
-    - group
+    - group (high priority)
         - [x] create (create-group)
             - [ ] handle cloud-init data
         - [ ] export-inventory (export-inventory)
-            - TODO: part of instance or groujp?
+            - TODO: part of instance or group?
         - [ ] export-playbook (export-user-playbook)
-            - TODO: part of instance or groujp?
+            - TODO: part of instance or group?
         - [x] file-from-text
-    - network
+    - dns (high priority)
+        - [ ] flush
+        - [ ] sync (sync-dns)
+    - network (lower priority)
         - [ ] attach
         - [ ] create (create-network)
         - [ ] cleanup (cleanup-network)
         - [ ] flush (flush-networks)
         - [ ] list (list-network)
         - [ ] destroy (destroy-network)
-    - scenario
+    - scenario (lower priority)
         - [ ] create (create-scenario)
         - [ ] destroy (destroy-scenario)
         - [ ] export-overview (export-scenario-overview)
-    - dns
-        - [ ] flush
-        - [ ] sync (sync-dns)
     - image
         - [x] list (list-images)
 - other tasks
@@ -55,4 +55,4 @@ This Go implementation is a port from the [Python implementation](https://github
     - [ ] consider `--verbose`/`-v` (or `--silent/-s`?) flag for certain commands
         - alternative: `--dry`/`-d` run flag (what _would_ happen _if_?)
         - instance create/destroy, start/stop, protect/deprotect, resize/scale
-        - make `--by`/`-b` argument optional for some commands (e.g. `instance list` and the like)
+        - consider making `--by`/`-b` argument optional for some commands (e.g. `instance list` and the like)
