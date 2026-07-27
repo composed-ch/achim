@@ -75,10 +75,7 @@ type InstanceGroup struct {
 func (p *InstanceGroup) Create(ctx context.Context) error {
 	exo := ctx.Value("exo").(*v3.Client)
 	for _, name := range p.Names {
-		genericLabels := map[string]string{
-			// TODO: consider "name"
-			"owner": name,
-		}
+		genericLabels := map[string]string{"name": name}
 		_, err := exo.CreateInstance(ctx, v3.CreateInstanceRequest{
 			AutoStart:    &p.Autostart,
 			DiskSize:     p.DiskSizeGB,

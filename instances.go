@@ -33,7 +33,7 @@ func CreateInstance(ctx context.Context, params NewInstanceParams) error {
 	}
 	newInstanceGroup, err := newInstancesParam.Compile(ctx)
 	if err != nil {
-		return fmt.Errorf("create instance %v: %w", params, err)
+		return fmt.Errorf("compile instance group %v: %w", params, err)
 	}
 	return newInstanceGroup.Create(ctx)
 }
