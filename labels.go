@@ -2,6 +2,7 @@ package achim
 
 import (
 	"fmt"
+	"maps"
 	"strings"
 )
 
@@ -36,11 +37,7 @@ func AsMap(labels []Label) map[string]string {
 
 func MergeMaps[K, V comparable](l, r map[K]V) map[K]V {
 	m := make(map[K]V)
-	for k, v := range l {
-		m[k] = v
-	}
-	for k, v := range r {
-		m[k] = v
-	}
+	maps.Copy(m, l)
+	maps.Copy(m, r)
 	return m
 }

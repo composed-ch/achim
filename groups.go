@@ -39,7 +39,7 @@ func GroupFileFromText(inputPath, outputPath string) error {
 	}
 	name := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
 	var users []User
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		if user, ok := parseEmail(line); ok {
 			users = append(users, user)
 		}
