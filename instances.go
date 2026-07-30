@@ -31,6 +31,7 @@ func CreateInstance(ctx context.Context, params NewInstanceParams) error {
 		Image:     params.Image,
 		Size:      params.Size,
 		Labels:    params.Labels,
+		CloudInit: params.CloudInit,
 	}
 	newInstanceGroup, err := newInstancesParam.Compile(ctx)
 	if err != nil {

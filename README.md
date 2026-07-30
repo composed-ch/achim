@@ -11,14 +11,13 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] add ([new])
         - [x] default ([new])
         - [x] remove ([new])
-    - instance (high priority)
+    - instance
         - [x] create (create-instance)
-            - [ ] handle cloud-init data
         - [x] deprotect
         - [x] destroy
         - [x] label (label-all-instances)
         - [x] list (list-instances)
-        - [ ] overview (export-group-overview)
+        - [x] overview (export-group-overview)
         - [x] probe
         - [x] protect
         - [x] ~~resize~~ embiggen (resize-disk)

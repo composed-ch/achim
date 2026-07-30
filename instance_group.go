@@ -2,9 +2,12 @@ package achim
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"os"
 
 	v3 "github.com/exoscale/egoscale/v3"
+	"gopkg.in/yaml.v3"
 )
 
 type NewInstancesParam struct {
@@ -14,6 +17,7 @@ type NewInstancesParam struct {
 	Image     string
 	Size      string
 	Labels    string
+	CloudInit string
 }
 
 func (p *NewInstancesParam) Compile(ctx context.Context) (*InstanceGroup, error) {
@@ -51,31 +55,49 @@ func (p *NewInstancesParam) Compile(ctx context.Context) (*InstanceGroup, error)
 	if err != nil {
 		return nil, fmt.Errorf("find SSH key: %w", err)
 	}
+	cloudInitData := make(map[string]string)
+	if p.CloudInit != "" {
+		cloudInit, err := parseCloudInitFile(p.CloudInit)
+		if err != nil {
+			return nil, fmt.Errorf("parse cloud init file: %w", err)
+		}
+		for _, name := range missingNames {
+			// TODO: handle cloud init data as a template (only needed for groups)
+			cloudInitData[name] = cloudInit
+		}
+	}
 	return &InstanceGroup{
-		Names:        missingNames,
-		Key:          sshKey,
-		Autostart:    p.Autostart,
-		Template:     template,
-		InstanceType: instanceType,
-		DiskSizeGB:   diskSizeGb,
-		Labels:       labels,
+		Names:         missingNames,
+		Key:           sshKey,
+		Autostart:     p.Autostart,
+		Template:      template,
+		InstanceType:  instanceType,
+		DiskSizeGB:    diskSizeGb,
+		Labels:        labels,
+		CloudInitData: cloudInitData,
 	}, nil
 }
 
 type InstanceGroup struct {
-	Names        []string
-	Key          *v3.SSHKey
-	Autostart    bool
-	Template     *v3.Template
-	InstanceType *v3.InstanceType
-	DiskSizeGB   int64
-	Labels       []Label
+	Names         []string
+	Key           *v3.SSHKey
+	Autostart     bool
+	Template      *v3.Template
+	InstanceType  *v3.InstanceType
+	DiskSizeGB    int64
+	Labels        []Label
+	CloudInitData map[string]string
 }
 
 func (p *InstanceGroup) Create(ctx context.Context) error {
 	exo := ctx.Value("exo").(*v3.Client)
 	for _, name := range p.Names {
 		genericLabels := map[string]string{"name": name}
+		userData, ok := p.CloudInitData[name]
+		if len(p.CloudInitData) > 0 && !ok {
+			return fmt.Errorf("missing cloud init data for user")
+		}
+		userDataBase64 := base64.StdEncoding.EncodeToString([]byte(userData))
 		_, err := exo.CreateInstance(ctx, v3.CreateInstanceRequest{
 			AutoStart:    &p.Autostart,
 			DiskSize:     p.DiskSizeGB,
@@ -84,10 +106,23 @@ func (p *InstanceGroup) Create(ctx context.Context) error {
 			Name:         name,
 			SSHKey:       p.Key,
 			Template:     p.Template,
+			UserData:     userDataBase64,
 		})
 		if err != nil {
 			return fmt.Errorf("create instance: %w", err)
 		}
 	}
 	return nil
+}
+
+func parseCloudInitFile(yamlPath string) (string, error) {
+	raw, err := os.ReadFile(yamlPath)
+	if err != nil {
+		return "", fmt.Errorf(`read YAML from file "%s": %w`, yamlPath, err)
+	}
+	obj := make(map[string]any)
+	if err := yaml.Unmarshal(raw, obj); err != nil {
+		return "", fmt.Errorf(`parse YAML content: %w`, err)
+	}
+	return string(raw), nil
 }
