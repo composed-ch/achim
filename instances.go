@@ -20,6 +20,7 @@ type NewInstanceParams struct {
 	Image     string
 	Size      string
 	Labels    string
+	CloudInit string
 }
 
 func CreateInstance(ctx context.Context, params NewInstanceParams) error {

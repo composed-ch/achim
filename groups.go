@@ -29,6 +29,7 @@ type NewGroupParams struct {
 	Image     string
 	Size      string
 	Labels    string
+	CloudInit string
 }
 
 func GroupFileFromText(inputPath, outputPath string) error {

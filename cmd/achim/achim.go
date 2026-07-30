@@ -75,6 +75,11 @@ func main() {
 								Usage:   "labels as key/value pairs, e.g. foo=bar,qux=baz",
 								Aliases: []string{"l"},
 							},
+							&cli.StringFlag{
+								Name:    "cloud-init",
+								Usage:   "path to Cloud Init YAML file",
+								Aliases: []string{"c"},
+							},
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -85,6 +90,7 @@ func main() {
 								Image:     c.String("image"),
 								Size:      c.String("size"),
 								Labels:    c.String("labels"),
+								CloudInit: c.String("cloud-init"),
 							})
 						},
 					},
@@ -181,7 +187,11 @@ func main() {
 								Usage:   "labels as key/value pairs, e.g. foo=bar,qux=baz",
 								Aliases: []string{"l"},
 							},
-							// TODO: --cloud-init/-c flag for cloud init file
+							&cli.StringFlag{
+								Name:    "cloud-init",
+								Usage:   "path to Cloud Init YAML file",
+								Aliases: []string{"c"},
+							},
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -192,6 +202,7 @@ func main() {
 								Image:     c.String("image"),
 								Size:      c.String("size"),
 								Labels:    c.String("labels"),
+								CloudInit: c.String("cloud-init"),
 							})
 						},
 					},
