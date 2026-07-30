@@ -10,11 +10,17 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-var byFlag = &cli.StringFlag{
+var mandatoryByFlag = &cli.StringFlag{
 	Name:     "by",
 	Usage:    "filter by label/value selector, e.g. foo=bar,qux=baz",
 	Aliases:  []string{"b"},
 	Required: true,
+}
+var optionalByFlag = &cli.StringFlag{
+	Name:     "by",
+	Usage:    "filter by label/value selector, e.g. foo=bar,qux=baz",
+	Aliases:  []string{"b"},
+	Required: false,
 }
 
 func main() {
@@ -210,7 +216,7 @@ func main() {
 						Name:  "deprotect",
 						Usage: "remove instance protection",
 						Flags: []cli.Flag{
-							byFlag,
+							mandatoryByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -227,7 +233,7 @@ func main() {
 								Usage:    "are you absolutely sure?",
 								Required: true,
 							},
-							byFlag,
+							mandatoryByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -243,7 +249,7 @@ func main() {
 						Name:  "list",
 						Usage: "list instances",
 						Flags: []cli.Flag{
-							byFlag,
+							optionalByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -270,7 +276,7 @@ func main() {
 								Name:     "value",
 								Required: true,
 							},
-							byFlag,
+							mandatoryByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -288,7 +294,7 @@ func main() {
 								Name:  "file",
 								Usage: "file path for HTML output (stdout if missing)",
 							},
-							byFlag,
+							mandatoryByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -301,7 +307,7 @@ func main() {
 						Name:  "probe",
 						Usage: "make HTTP(S) request to instance",
 						Flags: []cli.Flag{
-							byFlag,
+							mandatoryByFlag,
 							&cli.StringFlag{
 								Name:  "suffix",
 								Usage: "URL suffix, e.g. index.html",
@@ -323,7 +329,7 @@ func main() {
 						Name:  "protect",
 						Usage: "add instance protection",
 						Flags: []cli.Flag{
-							byFlag,
+							mandatoryByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -335,7 +341,7 @@ func main() {
 						Name:  "embiggen",
 						Usage: `make the disk of an instance larger ("embiggen" is a perfectly cromulent word)`,
 						Flags: []cli.Flag{
-							byFlag,
+							mandatoryByFlag,
 							&cli.Int64Flag{
 								Name:    "size",
 								Usage:   "new disk size in GB",
@@ -353,7 +359,7 @@ func main() {
 						Name:  "scale",
 						Usage: "change the instance type to another size",
 						Flags: []cli.Flag{
-							byFlag,
+							mandatoryByFlag,
 							&cli.StringFlag{
 								Name:    "size",
 								Usage:   "new instance size",
@@ -371,7 +377,7 @@ func main() {
 						Name:  "start",
 						Usage: "start instance",
 						Flags: []cli.Flag{
-							byFlag,
+							mandatoryByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {
@@ -383,7 +389,7 @@ func main() {
 						Name:  "stop",
 						Usage: "stop instance",
 						Flags: []cli.Flag{
-							byFlag,
+							mandatoryByFlag,
 						},
 						Before: before,
 						Action: func(ctx context.Context, c *cli.Command) error {

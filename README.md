@@ -54,4 +54,3 @@ This Go implementation is a port from the [Python implementation](https://github
     - [ ] consider `--verbose`/`-v` (or `--silent/-s`?) flag for certain commands
         - alternative: `--dry`/`-d` run flag (what _would_ happen _if_?)
         - instance create/destroy, start/stop, protect/deprotect, resize/scale
-        - consider making `--by`/`-b` argument optional for some commands (e.g. `instance list` and the like)
