@@ -75,21 +75,22 @@ func CreateGroup(ctx context.Context, params NewGroupParams) error {
 	if err != nil {
 		return fmt.Errorf("parse group file at %s: %w", params.GroupFile, err)
 	}
-	names := make([]string, len(group.Users))
-	for i, u := range group.Users {
-		names[i] = u.Name
+	names := make(map[string]User, len(group.Users))
+	for _, u := range group.Users {
+		names[u.Name] = u
 	}
-	newInstancesParam := NewInstancesParam{
+	newInstancesParam := NewInstanceGroupParam{
 		Names:     names,
 		Key:       params.Key,
 		Autostart: params.Autostart,
 		Image:     params.Image,
 		Size:      params.Size,
 		Labels:    fmt.Sprintf("%s,group=%s", params.Labels, group.Name),
+		CloudInit: params.CloudInit,
 	}
 	newInstanceGroup, err := newInstancesParam.Compile(ctx)
 	if err != nil {
-		return fmt.Errorf("comile instance group %v: %w", params, err)
+		return fmt.Errorf("compile instance group %v: %w", params, err)
 	}
 	return newInstanceGroup.Create(ctx)
 }

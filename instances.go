@@ -24,8 +24,9 @@ type NewInstanceParams struct {
 }
 
 func CreateInstance(ctx context.Context, params NewInstanceParams) error {
-	newInstancesParam := NewInstancesParam{
-		Names:     []string{params.Name},
+	singleUserData := User{Name: params.Name, Email: "", SSHKey: ""}
+	newInstancesParam := NewInstanceGroupParam{
+		Names:     map[string]User{params.Name: singleUserData},
 		Key:       params.Key,
 		Autostart: params.Autostart,
 		Image:     params.Image,

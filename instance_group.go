@@ -1,17 +1,19 @@
 package achim
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
 	"os"
+	"text/template"
 
 	v3 "github.com/exoscale/egoscale/v3"
 	"gopkg.in/yaml.v3"
 )
 
-type NewInstancesParam struct {
-	Names     []string
+type NewInstanceGroupParam struct {
+	Names     map[string]User
 	Key       string
 	Autostart bool
 	Image     string
@@ -20,7 +22,7 @@ type NewInstancesParam struct {
 	CloudInit string
 }
 
-func (p *NewInstancesParam) Compile(ctx context.Context) (*InstanceGroup, error) {
+func (p *NewInstanceGroupParam) Compile(ctx context.Context) (*InstanceGroup, error) {
 	labels, err := ParseLabels(p.Labels)
 	if err != nil {
 		return nil, fmt.Errorf("parse labels: %w", err)
@@ -34,7 +36,7 @@ func (p *NewInstancesParam) Compile(ctx context.Context) (*InstanceGroup, error)
 		existingNames[i.Name] = struct{}{}
 	}
 	missingNames := make([]string, 0)
-	for _, required := range p.Names {
+	for required := range p.Names {
 		if _, ok := existingNames[required]; !ok {
 			missingNames = append(missingNames, required)
 		}
@@ -57,13 +59,19 @@ func (p *NewInstancesParam) Compile(ctx context.Context) (*InstanceGroup, error)
 	}
 	cloudInitData := make(map[string]string)
 	if p.CloudInit != "" {
-		cloudInit, err := parseCloudInitFile(p.CloudInit)
+		cloudInitTmpl, err := parseCloudInitTemplate(p.CloudInit)
 		if err != nil {
 			return nil, fmt.Errorf("parse cloud init file: %w", err)
 		}
 		for _, name := range missingNames {
-			// TODO: handle cloud init data as a template (only needed for groups)
-			cloudInitData[name] = cloudInit
+			if user, ok := p.Names[name]; ok {
+				buf := bytes.NewBufferString("")
+				err := cloudInitTmpl.Execute(buf, user)
+				if err != nil {
+					return nil, fmt.Errorf("apply cloud init template to %v: %w", user, err)
+				}
+				cloudInitData[name] = buf.String()
+			}
 		}
 	}
 	return &InstanceGroup{
@@ -115,14 +123,18 @@ func (p *InstanceGroup) Create(ctx context.Context) error {
 	return nil
 }
 
-func parseCloudInitFile(yamlPath string) (string, error) {
+func parseCloudInitTemplate(yamlPath string) (*template.Template, error) {
 	raw, err := os.ReadFile(yamlPath)
 	if err != nil {
-		return "", fmt.Errorf(`read YAML from file "%s": %w`, yamlPath, err)
+		return nil, fmt.Errorf(`read YAML from file "%s": %w`, yamlPath, err)
 	}
 	obj := make(map[string]any)
 	if err := yaml.Unmarshal(raw, obj); err != nil {
-		return "", fmt.Errorf(`parse YAML content: %w`, err)
+		return nil, fmt.Errorf(`parse YAML content: %w`, err)
 	}
-	return string(raw), nil
+	tmpl, err := template.New("cloud-init").Parse(string(raw))
+	if err != nil {
+		return nil, fmt.Errorf(`parse YAML as template: %w`, err)
+	}
+	return tmpl, nil
 }
