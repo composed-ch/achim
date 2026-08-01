@@ -1,8 +1,9 @@
 module github.com/composed-ch/achim
 
-go 1.25.6
+go 1.26.5
 
 require (
+	github.com/composed-ch/goset v0.0.1
 	github.com/exoscale/egoscale/v3 v3.1.43
 	github.com/urfave/cli/v3 v3.7.0
 	gopkg.in/yaml.v3 v3.0.1

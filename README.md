@@ -26,24 +26,24 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] start
         - [x] stop
         - [x] type (list-instance-types)
-    - group (high priority)
+    - group (1st priority)
         - [x] create (create-group)
         - [ ] export-inventory (export-inventory)
             - TODO: part of instance or group?
         - [ ] export-playbook (export-user-playbook)
             - TODO: part of instance or group?
         - [x] file-from-text
-    - dns (high priority)
+    - dns
         - [x] flush
-        - [ ] sync (sync-dns)
-    - network (lower priority)
+        - [x] sync (sync-dns)
+    - network (2nd priority)
         - [ ] attach
         - [ ] create (create-network)
         - [ ] cleanup (cleanup-network)
         - [ ] flush (flush-networks)
         - [ ] list (list-network)
         - [ ] destroy (destroy-network)
-    - scenario (lower priority)
+    - scenario (3rd priority)
         - [ ] create (create-scenario)
         - [ ] destroy (destroy-scenario)
         - [ ] export-overview (export-scenario-overview)

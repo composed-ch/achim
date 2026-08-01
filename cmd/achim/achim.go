@@ -57,7 +57,20 @@ func main() {
 						},
 					},
 					{
-						Name: "sync",
+						Name:  "sync",
+						Usage: "sync VM hostnames with DNS records for a specific domain",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "domain",
+								Usage:    "domain for which to flush DNS entries",
+								Required: true,
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							domain := c.String("domain")
+							return achim.SyncRecords(ctx, domain)
+						},
 					},
 				},
 			},
