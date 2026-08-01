@@ -15,6 +15,9 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] create (create-instance)
         - [x] deprotect
         - [x] destroy
+        - [ ] export-inventory (export-inventory)
+        - [ ] export-playbook (export-user-playbook)
+            - [ ] TODO: still needed with cloud init?
         - [x] label (label-all-instances)
         - [x] list (list-instances)
         - [x] overview (export-group-overview)
@@ -28,10 +31,6 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] type (list-instance-types)
     - group (1st priority)
         - [x] create (create-group)
-        - [ ] export-inventory (export-inventory)
-            - TODO: part of instance or group?
-        - [ ] export-playbook (export-user-playbook)
-            - TODO: part of instance or group?
         - [x] file-from-text
     - dns
         - [x] flush
@@ -50,7 +49,4 @@ This Go implementation is a port from the [Python implementation](https://github
     - image
         - [x] list (list-images)
 - other tasks
-    - [ ] replace `%v` with `%w` everywhere for proper error wrapping
-    - [ ] consider `--verbose`/`-v` (or `--silent/-s`?) flag for certain commands
-        - alternative: `--dry`/`-d` run flag (what _would_ happen _if_?)
-        - instance create/destroy, start/stop, protect/deprotect, resize/scale
+    - [ ] add useful output to commands, especially ones involving `--by` selection
