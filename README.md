@@ -34,7 +34,7 @@ This Go implementation is a port from the [Python implementation](https://github
             - TODO: part of instance or group?
         - [x] file-from-text
     - dns (high priority)
-        - [ ] flush
+        - [x] flush
         - [ ] sync (sync-dns)
     - network (lower priority)
         - [ ] attach

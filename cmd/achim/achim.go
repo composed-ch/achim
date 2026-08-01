@@ -32,7 +32,29 @@ func main() {
 				Name: "dns",
 				Commands: []*cli.Command{
 					{
-						Name: "flush",
+						Name:  "flush",
+						Usage: "remove all non-system DNS entries for a specific domain",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "domain",
+								Usage:    "domain for which to flush DNS entries",
+								Required: true,
+							},
+							&cli.BoolFlag{
+								Name:     "sure",
+								Usage:    "are you absolutely sure?",
+								Required: true,
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							domain := c.String("domain")
+							sure := c.Bool("sure")
+							if !sure {
+								return fmt.Errorf(`you must be sure to flush all DNS records for "%s"`, domain)
+							}
+							return achim.FlushRecords(ctx, domain)
+						},
 					},
 					{
 						Name: "sync",
