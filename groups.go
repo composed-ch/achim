@@ -3,6 +3,7 @@ package achim
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -105,4 +106,80 @@ func parseEmail(line string) (User, bool) {
 		return User{}, false
 	}
 	return User{Name: username, Email: line}, true
+}
+
+type Play struct {
+	Become bool   `yaml:"become"`
+	Hosts  string `yaml:"hosts"`
+	Name   string `yaml:"name"`
+	Tasks  []Task `yaml:"tasks"`
+}
+
+type Task struct {
+	Name          string            `yaml:"name"`
+	User          TaskUser          `yaml:"user,omitempty"`
+	AuthorizedKey TaskAuthorizedKey `yaml:"authorized_key,omitempty"`
+}
+
+type TaskUser struct {
+	Append     bool     `yaml:"append"`
+	CreateHome bool     `yaml:"create_home"`
+	Groups     []string `yaml:"groups"`
+	Home       string   `yaml:"home"`
+	Name       string   `yaml:"name"`
+	Password   string   `yaml:"password"`
+	Shell      string   `yaml:"shell"`
+}
+type TaskAuthorizedKey struct {
+	Key  string `yaml:"key"`
+	User string `yaml:"user"`
+}
+
+func ExportPlaybook(ctx context.Context, groupfile, playbookPath string) error {
+	group, err := ParseGroupFile(groupfile)
+	if err != nil {
+		return fmt.Errorf("parse group file at %s: %w", groupfile, err)
+	}
+	f, err := os.Create(playbookPath)
+	if err != nil {
+		return fmt.Errorf(`create playbook file "%s": %w`, playbookPath, err)
+	} else {
+		defer f.Close()
+	}
+	playbook := make([]Play, len(group.Users))
+	for i, user := range group.Users {
+		play := Play{
+			Become: true,
+			Hosts:  user.Name,
+			Name:   fmt.Sprintf("User Setup for %s", user.Name),
+			Tasks: []Task{
+				{
+					Name: "User Created",
+					User: TaskUser{
+						Append:     true,
+						CreateHome: true,
+						Groups:     []string{"sudo"},
+						Home:       "/home/user",
+						Name:       "user",
+						Password:   "*",
+						Shell:      "/usr/bin/bash",
+					},
+				},
+				{
+					Name: "Key Authorized",
+					AuthorizedKey: TaskAuthorizedKey{
+						User: "user",
+						Key:  user.SSHKey,
+					},
+				},
+			},
+		}
+		playbook[i] = play
+	}
+	dump, err := yaml.Marshal(playbook)
+	if err != nil {
+		return fmt.Errorf(`marhsal playbook for group "%s": %w`, group.Name, err)
+	}
+	_, err = io.Writer.Write(f, dump)
+	return err
 }

@@ -136,10 +136,6 @@ func main() {
 						},
 					},
 					{
-						// TODO: consider implementing this under instance
-						Name: "export-playbook",
-					},
-					{
 						Name:      "file-from-text",
 						Usage:     "generate a group YAML file from a list of email addresses",
 						ArgsUsage: "<input> <output>",
@@ -148,6 +144,30 @@ func main() {
 								return cli.ShowSubcommandHelp(cmd)
 							}
 							return achim.GroupFileFromText(cmd.Args().Get(0), cmd.Args().Get(1))
+						},
+					},
+					{
+						Name:  "playbook",
+						Usage: "create an Ansible Playbook based on a group file",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "groupfile",
+								Usage:    "path to group file to be read",
+								Aliases:  []string{"g"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "playbook",
+								Usage:    "path to the playbook to be written",
+								Aliases:  []string{"p"},
+								Required: true,
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							groupfile := c.String("groupfile")
+							playbook := c.String("playbook")
+							return achim.ExportPlaybook(ctx, groupfile, playbook)
 						},
 					},
 				},

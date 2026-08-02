@@ -16,8 +16,6 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] deprotect
         - [x] destroy
         - [x] inventory (export-inventory)
-        - [ ] playbook (export-user-playbook)
-            - [ ] TODO: still needed with cloud init?
         - [x] label (label-all-instances)
         - [x] list (list-instances)
         - [x] overview (export-group-overview)
@@ -29,9 +27,10 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] start
         - [x] stop
         - [x] type (list-instance-types)
-    - group (1st priority)
+    - group
         - [x] create (create-group)
         - [x] file-from-text
+        - [x] playbook (export-user-playbook)
     - dns
         - [x] flush
         - [x] sync (sync-dns)
