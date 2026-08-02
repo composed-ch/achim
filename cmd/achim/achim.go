@@ -137,10 +137,6 @@ func main() {
 					},
 					{
 						// TODO: consider implementing this under instance
-						Name: "export-inventory",
-					},
-					{
-						// TODO: consider implementing this under instance
 						Name: "export-playbook",
 					},
 					{
@@ -278,6 +274,25 @@ func main() {
 								return fmt.Errorf(`you must be sure to destroy all instances by "%s"`, by)
 							}
 							return achim.DestroyInstances(ctx, by)
+						},
+					},
+					{
+						Name:  "inventory",
+						Usage: "export an Ansible inventory grouped by labels name and group",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "file",
+								Usage:    "path to inventory file to be written",
+								Aliases:  []string{"f"},
+								Required: true,
+							},
+							optionalByFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							file := c.String("file")
+							by := c.String("by")
+							return achim.ExportInventory(ctx, file, by)
 						},
 					},
 					{

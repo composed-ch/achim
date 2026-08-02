@@ -56,6 +56,40 @@ func DestroyInstances(ctx context.Context, by string) error {
 	return nil
 }
 
+func ExportInventory(ctx context.Context, file, by string) error {
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	f, err := os.Create(file)
+	if err != nil {
+		return fmt.Errorf(`create file "%s": %w`, file, err)
+	} else {
+		defer f.Close()
+	}
+	inventory := make(map[string]map[string][]string)
+	inventory["group"] = make(map[string][]string)
+	inventory["name"] = make(map[string][]string)
+	for _, instance := range instances {
+		ip := instance.PublicIP.String()
+		name := instance.Name
+		inventory["name"][name] = append(inventory["name"][name], ip)
+		if group, ok := instance.Labels["group"]; ok {
+			inventory["group"][group] = append(inventory["group"][group], ip)
+		}
+	}
+	for _, table := range inventory {
+		for value, ips := range table {
+			fmt.Fprintf(f, "[%s]\n", value)
+			for _, ip := range ips {
+				fmt.Fprintln(f, ip)
+			}
+			fmt.Fprintln(f, "")
+		}
+	}
+	return nil
+}
+
 func EmbiggenDisk(ctx context.Context, by string, gb int64) error {
 	instances, err := ListInstances(ctx, by)
 	if err != nil {

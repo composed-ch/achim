@@ -15,8 +15,8 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] create (create-instance)
         - [x] deprotect
         - [x] destroy
-        - [ ] export-inventory (export-inventory)
-        - [ ] export-playbook (export-user-playbook)
+        - [x] inventory (export-inventory)
+        - [ ] playbook (export-user-playbook)
             - [ ] TODO: still needed with cloud init?
         - [x] label (label-all-instances)
         - [x] list (list-instances)
