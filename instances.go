@@ -317,10 +317,14 @@ func changeInstanceProtection(ctx context.Context, by string, protect bool) erro
 		if protect {
 			if _, err := exo.AddInstanceProtection(ctx, instance.ID); err != nil {
 				return fmt.Errorf(`protect instance %s: %w`, instance.ID, err)
+			} else {
+				fmt.Printf("protected instance %s\n", instance.Name)
 			}
 		} else {
 			if _, err := exo.RemoveInstanceProtection(ctx, instance.ID); err != nil {
 				return fmt.Errorf(`deprotect instance %s: %w`, instance.ID, err)
+			} else {
+				fmt.Printf("deprotected instance %s\n", instance.Name)
 			}
 		}
 	}
