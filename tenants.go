@@ -54,7 +54,12 @@ func AddTenant(tenant Tenant, path string) error {
 	} else {
 		existing.Tenants[tenant.Name] = tenant
 	}
-	return saveTenants(existing, path)
+	if err := saveTenants(existing, path); err != nil {
+		return fmt.Errorf(`remove tenant "%s" from %s: %w`, tenant.Name, path, err)
+	} else {
+		fmt.Printf("added tenant %s to %s\n", tenant.Name, path)
+		return nil
+	}
 }
 
 func GetTenant(name, path string) (*Tenant, error) {
@@ -104,10 +109,14 @@ func SetDefaultTenant(name, path string) error {
 		return fmt.Errorf("read tenants from %s: %v", path, err)
 	}
 	if _, ok := tenants.Tenants[name]; !ok {
-		return fmt.Errorf("no tenant %s in %s", name, path)
+		return fmt.Errorf(`no tenant "%s" in %s`, name, path)
 	} else if tenants.Default != name {
 		tenants.Default = name
-		return saveTenants(tenants, path)
+		if err := saveTenants(tenants, path); err != nil {
+			return fmt.Errorf(`set default tenant "%s" in %s: %w`, name, path, err)
+		} else {
+			fmt.Printf("set default tenant %s in %s\n", name, path)
+		}
 	}
 	return nil
 }
@@ -128,8 +137,12 @@ func RemoveTenant(name, path string) error {
 			break
 		}
 	}
-	saveTenants(tenants, path)
-	return nil
+	if err := saveTenants(tenants, path); err != nil {
+		return fmt.Errorf(`remove tenant "%s" from %s: %w`, name, path, err)
+	} else {
+		fmt.Printf("removed tenant %s from %s\n", name, path)
+		return nil
+	}
 }
 
 func saveTenants(tenants *TenantFile, path string) error {
