@@ -58,6 +58,16 @@ func CreateNetwork(ctx context.Context, network NewNetworkParams) error {
 			return fmt.Errorf(`parse labels "%s": %w`, network.Labels, err)
 		}
 	}
+	existingNetworks, err := GetNetworks(ctx, "")
+	if err != nil {
+		return fmt.Errorf("list existing networks: %w", err)
+	}
+	for _, existingNetwork := range existingNetworks {
+		if network.Name == existingNetwork.Name {
+			return fmt.Errorf(`a network with the name "%s" already exists (id="%s")`,
+				network.Name, existingNetwork.ID)
+		}
+	}
 	r := v3.CreatePrivateNetworkRequest{
 		Name:        network.Name,
 		Description: network.Description,

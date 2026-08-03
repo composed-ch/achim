@@ -37,7 +37,6 @@ This Go implementation is a port from the [Python implementation](https://github
     - network (2nd priority)
         - [x] attach
         - [x] create (create-network)
-            - TODO: ensure unique names
         - [x] cleanup (cleanup-network)
         - [x] flush (flush-networks)
         - [x] list (list-network)
