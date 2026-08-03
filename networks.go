@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/composed-ch/achim/labels"
+	"github.com/composed-ch/goset"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -73,18 +74,25 @@ func CreateNetwork(ctx context.Context, network NewNetworkParams) error {
 	return nil
 }
 
-func ListNetworks(ctx context.Context, by string) error {
+func GetNetworks(ctx context.Context, by string) ([]v3.PrivateNetwork, error) {
 	exo := ctx.Value("exo").(*v3.Client)
 	result, err := exo.ListPrivateNetworks(ctx)
 	if err != nil {
-		return fmt.Errorf("list networks: %w", err)
+		return nil, fmt.Errorf("list networks: %w", err)
 	}
 	matching, err := labels.Filter(labels.ToFilterableNetworks(result.PrivateNetworks), by)
 	if err != nil {
-		return fmt.Errorf(`filter networks by "%s": %w`, by, err)
+		return nil, fmt.Errorf(`filter networks by "%s": %w`, by, err)
 	}
-	for _, item := range matching {
-		n := item.Network
+	return labels.UnwrapNetworks(matching), nil
+}
+
+func ListNetworks(ctx context.Context, by string) error {
+	networks, err := GetNetworks(ctx, by)
+	if err != nil {
+		return fmt.Errorf(`get networks by "%s": %w`, by, err)
+	}
+	for _, n := range networks {
 		fmt.Printf("network %s [%s,%s]:%s\n", n.Name, n.StartIP, n.EndIP, n.Netmask)
 	}
 	return nil
@@ -118,5 +126,100 @@ func Attach(ctx context.Context, network, instance, ip string) error {
 		return fmt.Errorf(`attach instance "%s" to network "%s" with IP "%s": %w`, instance, network, ip, err)
 	}
 	fmt.Printf("attached instance %s to network %s with IP %s\n", instance, network, ip)
+	return nil
+}
+
+type NetworkPredicate func(network v3.PrivateNetwork) bool
+
+func DeleteNetworks(ctx context.Context, predicate NetworkPredicate) ([]v3.PrivateNetwork, error) {
+	exo := ctx.Value("exo").(*v3.Client)
+	networkResponse, err := exo.ListPrivateNetworks(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list networks: %w", err)
+	}
+	deleted := make([]v3.PrivateNetwork, 0)
+	for _, network := range networkResponse.PrivateNetworks {
+		if predicate(network) {
+			_, err := exo.DeletePrivateNetwork(ctx, network.ID)
+			if err != nil {
+				return deleted, fmt.Errorf("delete network %v: %w", network, err)
+			}
+			deleted = append(deleted, network)
+		}
+	}
+	return deleted, nil
+}
+
+func CleanupNetworks(ctx context.Context) error {
+	instances, err := ListInstances(ctx, "")
+	if err != nil {
+		return fmt.Errorf("list instances: %w", err)
+	}
+	networks, err := GetNetworks(ctx, "")
+	if err != nil {
+		return fmt.Errorf("list networks: %w", err)
+	}
+	allNetworkIds := make([]v3.UUID, len(networks))
+	for i, n := range networks {
+		allNetworkIds[i] = n.ID
+	}
+	usedNetworkIds := make([]v3.UUID, 0)
+	for _, instance := range instances {
+		for _, n := range instance.PrivateNetworks {
+			usedNetworkIds = append(usedNetworkIds, n.ID)
+		}
+	}
+	allNetworksSet := goset.From(allNetworkIds)
+	usedNetworksSet := goset.From(usedNetworkIds)
+	orphanedNetworksSet := allNetworksSet.Diff(usedNetworksSet)
+	deleted, err := DeleteNetworks(ctx, func(network v3.PrivateNetwork) bool {
+		_, ok := orphanedNetworksSet.Entries[network.ID]
+		return ok
+	})
+	if len(deleted) > 0 {
+		for _, d := range deleted {
+			fmt.Printf("deleted orphaned network %s [%s:%s]:%s\n", d.Name, d.StartIP, d.EndIP, d.Netmask)
+		}
+	}
+	if err != nil {
+		return fmt.Errorf("cleanup orphaned networks: %w", err)
+	}
+	return nil
+}
+
+func DestroyNetworks(ctx context.Context, by string) error {
+	matchingNetworks, err := GetNetworks(ctx, by)
+	if err != nil {
+		return fmt.Errorf(`filter networks by "%s": %w`, err)
+	}
+	matchingNetworkIds := make(map[v3.UUID]struct{})
+	for _, network := range matchingNetworks {
+		matchingNetworkIds[network.ID] = struct{}{}
+	}
+	deleted, err := DeleteNetworks(ctx, func(network v3.PrivateNetwork) bool {
+		_, ok := matchingNetworkIds[network.ID]
+		return ok
+	})
+	if len(deleted) > 0 {
+		for _, d := range deleted {
+			fmt.Printf("deleted network %s [%s:%s]:%s\n", d.Name, d.StartIP, d.EndIP, d.Netmask)
+		}
+	}
+	if err != nil {
+		return fmt.Errorf(`destroy networks by "%s": %w`, by, err)
+	}
+	return nil
+}
+
+func FlushNetworks(ctx context.Context) error {
+	deleted, err := DeleteNetworks(ctx, func(network v3.PrivateNetwork) bool { return true })
+	if len(deleted) > 0 {
+		for _, d := range deleted {
+			fmt.Printf("deleted network %s [%s:%s]:%s\n", d.Name, d.StartIP, d.EndIP, d.Netmask)
+		}
+	}
+	if err != nil {
+		return fmt.Errorf("flush networks: %w", err)
+	}
 	return nil
 }

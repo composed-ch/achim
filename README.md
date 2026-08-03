@@ -37,14 +37,11 @@ This Go implementation is a port from the [Python implementation](https://github
     - network (2nd priority)
         - [x] attach
         - [x] create (create-network)
-            - [ ] enforce unique names
-        - [ ] cleanup (cleanup-network)
-            - deletes all networks without a single instance attached
-        - [ ] flush (flush-networks)
-            - deletes all networks
+            - TODO: ensure unique names
+        - [x] cleanup (cleanup-network)
+        - [x] flush (flush-networks)
         - [x] list (list-network)
-        - [ ] destroy (destroy-network)
-            - deletes a specific network by name
+        - [x] destroy (destroy-network)
     - scenario (3rd priority)
         - [ ] create (create-scenario)
         - [ ] destroy (destroy-scenario)

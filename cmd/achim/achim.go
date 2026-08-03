@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -529,7 +530,12 @@ func main() {
 						},
 					},
 					{
-						Name: "cleanup",
+						Name:   "cleanup",
+						Usage:  "deletes all orphaned networks, i.e. networks not attached to any instance",
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							return achim.CleanupNetworks(ctx)
+						},
 					},
 					{
 						Name:  "create",
@@ -585,10 +591,36 @@ func main() {
 						},
 					},
 					{
-						Name: "destroy",
+						Name:  "destroy",
+						Usage: "deletes all networks matching a filter",
+						Flags: []cli.Flag{
+							mandatoryByFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							return achim.DestroyNetworks(ctx, by)
+						},
 					},
 					{
-						Name: "flush",
+						Name:  "flush",
+						Usage: "deletes all networks",
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name:     "sure",
+								Usage:    "are you absolutely sure?",
+								Aliases:  []string{"s"},
+								Required: true,
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							sure := c.Bool("sure")
+							if !sure {
+								return errors.New("you must be sure to delete all networks")
+							}
+							return achim.FlushNetworks(ctx)
+						},
 					},
 					{
 						Name:  "list",
