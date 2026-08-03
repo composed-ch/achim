@@ -89,3 +89,34 @@ func ListNetworks(ctx context.Context, by string) error {
 	}
 	return nil
 }
+
+func Attach(ctx context.Context, network, instance, ip string) error {
+	exo := ctx.Value("exo").(*v3.Client)
+	ipAddress := net.ParseIP(ip)
+	if ipAddress == nil {
+		return fmt.Errorf(`parse IP address "%s": error`, ip)
+	}
+	matchingInstances, err := ListInstances(ctx, fmt.Sprintf("name=%s", instance))
+	if err != nil {
+		return fmt.Errorf(`list instances for name="%s": %w`, instance, err)
+	} else if len(matchingInstances) != 1 {
+		return fmt.Errorf(`expected to get one instance for name="%s", got %d`, instance, len(matchingInstances))
+	}
+	networksResposne, err := exo.ListPrivateNetworks(ctx)
+	if err != nil {
+		return fmt.Errorf("list networks: %w", err)
+	}
+	matchingNetwork, err := networksResposne.FindPrivateNetwork(network)
+	if err != nil {
+		return fmt.Errorf(`find network by name "%s": %w`, network, err)
+	}
+	_, err = exo.AttachInstanceToPrivateNetwork(ctx, matchingNetwork.ID, v3.AttachInstanceToPrivateNetworkRequest{
+		IP:       ipAddress,
+		Instance: &v3.AttachInstanceToPrivateNetworkRequestInstance{ID: matchingInstances[0].ID},
+	})
+	if err != nil {
+		return fmt.Errorf(`attach instance "%s" to network "%s" with IP "%s": %w`, instance, network, ip, err)
+	}
+	fmt.Printf("attached instance %s to network %s with IP %s\n", instance, network, ip)
+	return nil
+}

@@ -498,7 +498,35 @@ func main() {
 				Name: "network",
 				Commands: []*cli.Command{
 					{
-						Name: "attach",
+						Name:  "attach",
+						Usage: "attach an instance to a network with an IP address",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "instance",
+								Usage:    "instance name",
+								Aliases:  []string{"i"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "network",
+								Usage:    "network name",
+								Aliases:  []string{"n"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "ip",
+								Usage:    "IP address",
+								Aliases:  []string{"a"},
+								Required: true,
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							instance := c.String("instance")
+							network := c.String("network")
+							ip := c.String("ip")
+							return achim.Attach(ctx, network, instance, ip)
+						},
 					},
 					{
 						Name: "cleanup",
