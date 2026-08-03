@@ -119,6 +119,8 @@ func (p *InstanceGroup) Create(ctx context.Context) error {
 		})
 		if err != nil {
 			return fmt.Errorf("create instance: %w", err)
+		} else {
+			fmt.Printf("created instance %s (size: %s, image: %s)\n", name, p.InstanceType.Size, p.Template.Name)
 		}
 	}
 	return nil
