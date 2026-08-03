@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/composed-ch/achim/labels"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -49,9 +50,9 @@ func CreateNetwork(ctx context.Context, network NewNetworkParams) error {
 	if err != nil {
 		return fmt.Errorf("parse IPs of %v: %w", network, err)
 	}
-	var labels []Label
+	var parsedLabels []labels.Label
 	if network.Labels != "" {
-		labels, err = ParseLabels(network.Labels)
+		parsedLabels, err = labels.ParseLabels(network.Labels)
 		if err != nil {
 			return fmt.Errorf(`parse labels "%s": %w`, network.Labels, err)
 		}
@@ -62,12 +63,29 @@ func CreateNetwork(ctx context.Context, network NewNetworkParams) error {
 		StartIP:     ipConfig.StartIP,
 		EndIP:       ipConfig.EndIP,
 		Netmask:     ipConfig.Netmask,
-		Labels:      AsMap(labels),
+		Labels:      labels.AsMap(parsedLabels),
 	}
 	_, err = exo.CreatePrivateNetwork(ctx, r)
 	if err != nil {
 		return fmt.Errorf("create network %v: %w", network, err)
 	}
 	fmt.Printf("created network %s [%s,%s]:%s\n", network.Name, network.StartIP, network.EndIP, network.Netmask)
+	return nil
+}
+
+func ListNetworks(ctx context.Context, by string) error {
+	exo := ctx.Value("exo").(*v3.Client)
+	result, err := exo.ListPrivateNetworks(ctx)
+	if err != nil {
+		return fmt.Errorf("list networks: %w", err)
+	}
+	matching, err := labels.Filter(labels.ToFilterableNetworks(result.PrivateNetworks), by)
+	if err != nil {
+		return fmt.Errorf(`filter networks by "%s": %w`, by, err)
+	}
+	for _, item := range matching {
+		n := item.Network
+		fmt.Printf("network %s [%s,%s]:%s\n", n.Name, n.StartIP, n.EndIP, n.Netmask)
+	}
 	return nil
 }

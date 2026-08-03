@@ -9,6 +9,7 @@ import (
 	"os"
 	"slices"
 
+	"github.com/composed-ch/achim/labels"
 	"github.com/composed-ch/achim/templates"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -164,11 +165,11 @@ func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
 		}
 		instances = append(instances, *instance)
 	}
-	instances, err = filterInstances(instances, by)
+	matching, err := labels.Filter(labels.ToFilterableInstances(instances), by)
 	if err != nil {
 		return nil, fmt.Errorf("filter instances: %w", err)
 	}
-	return instances, nil
+	return labels.UnwrapInstances(matching), err
 }
 
 func ListInstanceTypes(ctx context.Context, family string) ([]v3.InstanceType, error) {
@@ -353,38 +354,4 @@ func getInstanceByID(ctx context.Context, id v3.UUID) (*v3.Instance, error) {
 		return nil, fmt.Errorf(`get instance by ID "%v": %w`, id, err)
 	}
 	return instance, nil
-}
-
-func filterInstances(instances []v3.Instance, by string) ([]v3.Instance, error) {
-	if by == "" {
-		return instances, nil
-	}
-	selectors, err := ParseLabels(by)
-	if err != nil {
-		return nil, fmt.Errorf(`parse --by "%s": %w`, by, err)
-	}
-	filtered := make([]v3.Instance, 0)
-	for _, instance := range instances {
-		retain := true
-		for _, selector := range selectors {
-			if selector.Key == "name" {
-				if instance.Name != selector.Value {
-					retain = false
-					break
-				}
-			} else {
-				if value, ok := instance.Labels[selector.Key]; !ok {
-					retain = false
-					break
-				} else if value != selector.Value {
-					retain = false
-					break
-				}
-			}
-		}
-		if retain {
-			filtered = append(filtered, instance)
-		}
-	}
-	return filtered, nil
 }

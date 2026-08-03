@@ -8,6 +8,7 @@ import (
 	"os"
 	"text/template"
 
+	"github.com/composed-ch/achim/labels"
 	v3 "github.com/exoscale/egoscale/v3"
 	"gopkg.in/yaml.v3"
 )
@@ -23,7 +24,7 @@ type NewInstanceGroupParam struct {
 }
 
 func (p *NewInstanceGroupParam) Compile(ctx context.Context) (*InstanceGroup, error) {
-	labels, err := ParseLabels(p.Labels)
+	labels, err := labels.ParseLabels(p.Labels)
 	if err != nil {
 		return nil, fmt.Errorf("parse labels: %w", err)
 	}
@@ -93,7 +94,7 @@ type InstanceGroup struct {
 	Template      *v3.Template
 	InstanceType  *v3.InstanceType
 	DiskSizeGB    int64
-	Labels        []Label
+	Labels        []labels.Label
 	CloudInitData map[string]string
 }
 
@@ -110,7 +111,7 @@ func (p *InstanceGroup) Create(ctx context.Context) error {
 			AutoStart:    &p.Autostart,
 			DiskSize:     p.DiskSizeGB,
 			InstanceType: p.InstanceType,
-			Labels:       MergeMaps(AsMap(p.Labels), genericLabels),
+			Labels:       labels.MergeMaps(labels.AsMap(p.Labels), genericLabels),
 			Name:         name,
 			SSHKey:       p.Key,
 			Template:     p.Template,

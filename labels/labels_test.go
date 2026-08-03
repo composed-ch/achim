@@ -1,4 +1,4 @@
-package achim
+package labels
 
 import (
 	"slices"

@@ -563,7 +563,16 @@ func main() {
 						Name: "flush",
 					},
 					{
-						Name: "list",
+						Name:  "list",
+						Usage: "list networks",
+						Flags: []cli.Flag{
+							optionalByFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							by := c.String("by")
+							return achim.ListNetworks(ctx, by)
+						},
 					},
 				},
 			},
