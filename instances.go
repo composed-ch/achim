@@ -52,6 +52,8 @@ func DestroyInstances(ctx context.Context, by string) error {
 		_, err := exo.DeleteInstance(ctx, instance.ID)
 		if err != nil {
 			return fmt.Errorf(`destroy instance "%s": %w`, instance.ID, err)
+		} else {
+			fmt.Printf("destroyed instance %s\n", instance.Name)
 		}
 	}
 	return nil
@@ -88,6 +90,7 @@ func ExportInventory(ctx context.Context, file, by string) error {
 			fmt.Fprintln(f, "")
 		}
 	}
+	fmt.Printf("inventory created under %s\n", file)
 	return nil
 }
 
@@ -112,6 +115,8 @@ func EmbiggenDisk(ctx context.Context, by string, gb int64) error {
 		if err != nil {
 			return fmt.Errorf(`resize disk of instance %s "%s": %w`,
 				instance.ID, instance.Name, err)
+		} else {
+			fmt.Printf("resized disk of instance %s to %dGB\n", instance.Name, gb)
 		}
 	}
 	return nil
@@ -146,6 +151,8 @@ func ScaleInstances(ctx context.Context, by string, size string) error {
 		if err != nil {
 			return fmt.Errorf(`scale instance %s "%s" to size %s: %w`,
 				instance.ID, instance.Name, size, err)
+		} else {
+			fmt.Printf("resized instance %s to %s\n", instance.Name, size)
 		}
 	}
 	return nil
@@ -215,6 +222,8 @@ func LabelInstances(ctx context.Context, label, value, by string) error {
 		update := v3.UpdateInstanceRequest{Labels: labels}
 		if _, err := exo.UpdateInstance(ctx, instance.ID, update); err != nil {
 			return fmt.Errorf(`label instance %s: %w`, instance.ID, err)
+		} else {
+			fmt.Printf("labeled instance %s with %s=%s\n", instance.Name, label, value)
 		}
 	}
 	return nil
@@ -283,6 +292,7 @@ func Overview(ctx context.Context, by, file string) error {
 	if err := tmpl.Execute(html, data); err != nil {
 		return fmt.Errorf("execute overview template: %w", err)
 	}
+	fmt.Printf("overview created under %s\n", file)
 	return nil
 }
 
@@ -341,10 +351,14 @@ func changeInstanceState(ctx context.Context, by string, up bool) error {
 		if up {
 			if _, err := exo.StartInstance(ctx, instance.ID, v3.StartInstanceRequest{}); err != nil {
 				return err
+			} else {
+				fmt.Printf("started instance %s\n", instance.Name)
 			}
 		} else {
 			if _, err := exo.StopInstance(ctx, instance.ID); err != nil {
 				return err
+			} else {
+				fmt.Printf("stopped instance %s\n", instance.Name)
 			}
 		}
 	}
