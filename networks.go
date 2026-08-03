@@ -190,7 +190,7 @@ func CleanupNetworks(ctx context.Context) error {
 func DestroyNetworks(ctx context.Context, by string) error {
 	matchingNetworks, err := GetNetworks(ctx, by)
 	if err != nil {
-		return fmt.Errorf(`filter networks by "%s": %w`, err)
+		return fmt.Errorf(`filter networks by "%s": %w`, by, err)
 	}
 	matchingNetworkIds := make(map[v3.UUID]struct{})
 	for _, network := range matchingNetworks {
