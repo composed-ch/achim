@@ -56,6 +56,7 @@ func GroupFileFromText(inputPath, outputPath string) error {
 	if err := os.WriteFile(outputPath, out, 0644); err != nil {
 		return fmt.Errorf("write output file: %w", err)
 	}
+	fmt.Printf("converted emails from %s to %s\n", inputPath, outputPath)
 	return nil
 }
 
@@ -180,6 +181,9 @@ func ExportPlaybook(ctx context.Context, groupfile, playbookPath string) error {
 	if err != nil {
 		return fmt.Errorf(`marhsal playbook for group "%s": %w`, group.Name, err)
 	}
-	_, err = io.Writer.Write(f, dump)
-	return err
+	if _, err = io.Writer.Write(f, dump); err != nil {
+		return fmt.Errorf(`write playbook to "%s": %w`, playbookPath, err)
+	}
+	fmt.Printf("created playbook based on group file %s under %s\n", groupfile, playbookPath)
+	return nil
 }
