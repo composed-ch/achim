@@ -36,7 +36,7 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] sync (sync-dns)
     - network (2nd priority)
         - [ ] attach
-        - [ ] create (create-network)
+        - [x] create (create-network)
         - [ ] cleanup (cleanup-network)
         - [ ] flush (flush-networks)
         - [ ] list (list-network)

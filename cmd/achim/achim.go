@@ -504,7 +504,57 @@ func main() {
 						Name: "cleanup",
 					},
 					{
-						Name: "create",
+						Name:  "create",
+						Usage: "create a managed private network",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "name",
+								Usage:    "network name",
+								Aliases:  []string{"n"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "description",
+								Usage:    "network description",
+								Aliases:  []string{"d"},
+								Required: false,
+							},
+							&cli.StringFlag{
+								Name:     "labels",
+								Usage:    "labels to annotate network, e.g. purpose=testing,class=c",
+								Aliases:  []string{"d"},
+								Required: false,
+							},
+							&cli.StringFlag{
+								Name:     "start-ip",
+								Usage:    "lower end of IP range, e.g. 10.0.0.10",
+								Aliases:  []string{"s"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "end-ip",
+								Usage:    "upper end of IP range, e.g. 10.0.0.100",
+								Aliases:  []string{"e"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "netmask",
+								Usage:    "subnet mask, e.g. 255.255.255.0",
+								Aliases:  []string{"n"},
+								Required: true,
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							return achim.CreateNetwork(ctx, achim.NewNetworkParams{
+								Name:        c.String("name"),
+								Description: c.String("description"),
+								Labels:      c.String("labels"),
+								StartIP:     c.String("start-ip"),
+								EndIP:       c.String("end-ip"),
+								Netmask:     c.String("netmask"),
+							})
+						},
 					},
 					{
 						Name: "destroy",
