@@ -107,8 +107,9 @@ func (s *Scenario) ValidateExternally(ctx context.Context) (*InstanceCreationCac
 		template, err := GetTemplateByName(ctx, instance.Image)
 		if err != nil {
 			return nil, fmt.Errorf("get image for instance %s by name %s: %w", instance.Name, instance.Image, err)
+		} else {
+			cache.TemplatesByImageName[instance.Image] = template
 		}
-		cache.TemplatesByImageName[instance.Name] = template
 		if instanceType, ok := allowedSizes[instance.Size]; !ok {
 			return nil, fmt.Errorf("no such size %s (demanded by instance %s)", instance.Size, instance.Name)
 		} else {
@@ -119,9 +120,10 @@ func (s *Scenario) ValidateExternally(ctx context.Context) (*InstanceCreationCac
 }
 
 type ScenarioSetup struct {
-	Instances   map[string]ScenarioInstance
-	Networks    map[string]ScenarioNetwork
-	Attachments map[string]map[string]net.IP
+	Instances      map[string]ScenarioInstance
+	InstanceOwners map[string]string
+	Networks       map[string]ScenarioNetwork
+	Attachments    map[string]map[string]net.IP
 }
 
 func (s *Scenario) CompileFor(ctx context.Context, g *Group) *ScenarioSetup {
@@ -129,14 +131,16 @@ func (s *Scenario) CompileFor(ctx context.Context, g *Group) *ScenarioSetup {
 	nNetworks := len(s.Networks)
 	nUsers := len(g.Users)
 	setup := ScenarioSetup{
-		Instances:   make(map[string]ScenarioInstance, nInstances*nUsers),
-		Networks:    make(map[string]ScenarioNetwork, nNetworks*nUsers),
-		Attachments: make(map[string]map[string]net.IP),
+		Instances:      make(map[string]ScenarioInstance, nInstances*nUsers),
+		InstanceOwners: make(map[string]string, nInstances*nUsers),
+		Networks:       make(map[string]ScenarioNetwork, nNetworks*nUsers),
+		Attachments:    make(map[string]map[string]net.IP),
 	}
 	for _, user := range g.Users {
 		for _, instance := range s.Instances {
 			instanceName := fmt.Sprintf("%s_%s", user.Name, instance.Name)
 			setup.Instances[instanceName] = instance
+			setup.InstanceOwners[instanceName] = user.Name
 		}
 		for _, network := range s.Networks {
 			networkName := fmt.Sprintf("%s_%s", user.Name, network.Name)
@@ -170,7 +174,11 @@ func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 	if err != nil {
 		return fmt.Errorf(`parse group file "%s": %w`, params.GroupFile, err)
 	}
-	labels, err := labels.ParseLabels(params.Labels)
+	key, err := GetSSHKeyByName(ctx, params.KeyName)
+	if err != nil {
+		return fmt.Errorf(`get SSH key by name "%s": %w`, params.KeyName, err)
+	}
+	sharedLabels, err := labels.ParseLabels(params.Labels)
 	if err != nil {
 		return fmt.Errorf(`parse labels "%s": %w`, params.Labels, err)
 	}
@@ -181,20 +189,67 @@ func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 	if err := uniqueNetworks(ctx, setup); err != nil {
 		return err
 	}
-
-	for instanceName, _ := range setup.Instances {
-		fmt.Println("create instance", instanceName)
+	instanceIDsByName := make(map[string]v3.UUID)
+	for instanceName, details := range setup.Instances {
+		owner := setup.InstanceOwners[instanceName]
+		specificLabels := map[string]string{
+			"owner":    owner,
+			"scenario": scenario.Name,
+			"group":    group.Name,
+		}
+		instanceLabels := labels.MergeMaps(labels.AsMap(sharedLabels), specificLabels)
+		instanceType := cache.InstanceTypesBySize[details.Size]
+		template := cache.TemplatesByImageName[details.Image]
+		req := v3.CreateInstanceRequest{
+			AutoStart:    &params.Autostart,
+			DiskSize:     details.DiskSizeGB,
+			InstanceType: instanceType,
+			Labels:       instanceLabels,
+			Name:         instanceName,
+			SSHKey:       key,
+			Template:     template,
+		}
+		op, err := exo.CreateInstance(ctx, req)
+		if err != nil {
+			return fmt.Errorf(`create instance "%s": %w`, instanceName, err)
+		}
+		instanceIDsByName[instanceName] = op.Reference.ID
+		fmt.Printf("created instance %s for %s\n", instanceName, owner)
 	}
-	for networkName, _ := range setup.Networks {
-		fmt.Println("create network", networkName)
+	networkIDsByName := make(map[string]v3.UUID)
+	for networkName, details := range setup.Networks {
+		req := v3.CreatePrivateNetworkRequest{
+			Name:        networkName,
+			Description: "", // TODO: incorporate network description into YAML file format
+			StartIP:     net.ParseIP(details.StartIP),
+			EndIP:       net.ParseIP(details.EndIP),
+			Netmask:     net.ParseIP(details.Netmask),
+			// TODO: labels as above (requires additional NetworkOwners map on setup)
+		}
+		op, err := exo.CreatePrivateNetwork(ctx, req)
+		if err != nil {
+			return fmt.Errorf(`create network "%s": %w`, networkName, err)
+		}
+		networkIDsByName[networkName] = op.Reference.ID
+		fmt.Printf("created network %s\n", networkName /* TODO: output owner */)
 	}
 	for instanceName, attachments := range setup.Attachments {
 		for networkName, ip := range attachments {
-			fmt.Println("attach instance", instanceName, "to network", networkName, "with IP", ip)
+			networkID := networkIDsByName[networkName]
+			instanceID := instanceIDsByName[instanceName]
+			req := v3.AttachInstanceToPrivateNetworkRequest{
+				IP: ip,
+				Instance: &v3.AttachInstanceToPrivateNetworkRequestInstance{
+					ID: instanceID,
+				},
+			}
+			_, err := exo.AttachInstanceToPrivateNetwork(ctx, networkID, req)
+			if err != nil {
+				return fmt.Errorf("attach network %s to instance %s with IP %s: %w", networkName, instanceName, ip)
+			}
+			fmt.Printf("attached network %s to instance %s with IP %s\n", networkName, instanceName, ip)
 		}
 	}
-
-	fmt.Println(labels, cache, exo)
 	return nil
 }
 
