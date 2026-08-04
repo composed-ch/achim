@@ -38,3 +38,15 @@ func GetTemplateByName(ctx context.Context, name string) (*v3.Template, error) {
 	}
 	return nil, fmt.Errorf(`no template for image name "%s" found`, name)
 }
+
+func GetAllowedSizes(ctx context.Context) ([]string, error) {
+	types, err := ListInstanceTypes(ctx, "standard")
+	if err != nil {
+		return nil, fmt.Errorf("list standard intance types: %w", err)
+	}
+	allowedSizes := make([]string, len(types))
+	for i, t := range types {
+		allowedSizes[i] = string(t.Size)
+	}
+	return allowedSizes, nil
+}
