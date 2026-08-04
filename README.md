@@ -33,15 +33,17 @@ This Go implementation is a port from the [Python implementation](https://github
     - dns
         - [x] flush
         - [x] sync (sync-dns)
-    - network (2nd priority)
+    - network
         - [x] attach
         - [x] create (create-network)
         - [x] cleanup (cleanup-network)
         - [x] flush (flush-networks)
         - [x] list (list-network)
         - [x] destroy (destroy-network)
-    - scenario (3rd priority)
-        - [ ] create (create-scenario)
+    - scenario
+        - [x] create (create-scenario)
+            - TODO: network labels (if needed)
+            - TODO: cloud init data (if needed)
         - [ ] destroy (destroy-scenario)
         - [ ] export-overview (export-scenario-overview)
     - image
