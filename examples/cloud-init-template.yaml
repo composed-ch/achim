@@ -1,0 +1,11 @@
+#cloud-config
+users:
+  - default
+  - name: "{{.Name}}"
+    groups: sudo
+    lock_passwd: false
+    plain_text_passwd: topsecret
+    shell: /usr/bin/bash
+    ssh_authorized_keys:
+      - "{{.SSHKey}}"
+    sudo: "ALL=(ALL) NOPASSWD:ALL"

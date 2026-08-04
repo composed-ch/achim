@@ -1,0 +1,35 @@
+name: "Modul 999"
+instances:
+  - name: windows
+    image: Windows Server 2025
+    size: medium
+    disk-gb: 50
+  - name: ubuntu
+    image: Linux Ubuntu 26.04 LTS 64-bit
+    size: medium
+    disk-gb: 10
+  - name: firewall
+    image: IPFire 2.29 - Core Update 197
+    size: micro
+    disk-gb: 10
+networks:
+  - name: green
+    description: connects windows to the firewall
+    start-ip: 192.168.0.1
+    end-ip: 192.168.0.20
+    netmask: 255.255.0.0
+    connects:
+      - instance: firewall
+        ip: 192.168.0.1
+      - instance: windows
+        ip: 192.168.0.10
+  - name: orange
+    description: connects ubuntu to the firewall
+    start-ip: 10.0.0.1
+    end-ip: 10.0.0.20
+    netmask: 255.255.255.0
+    connects:
+      - instance: firewall
+        ip: 10.0.0.1
+      - instance: ubuntu
+        ip: 10.0.0.10

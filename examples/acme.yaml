@@ -1,0 +1,12 @@
+name: acme
+users:
+  - email: alice_bobson@sluz.ch
+    name: alice_bobson
+    password: topsecret
+    ssh-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXQspnfHu/LuIdjZ2aBgCPwIYj+CyIlgYv8+KBLn2s5 patrick.bucher@mailbox.org"
+  - email: bob_allison@sluz.ch
+    name: bob_allison
+    ssh-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXQspnfHu/LuIdjZ2aBgCPwIYj+CyIlgYv8+KBLn2s5 patrick.bucher@mailbox.org"
+  - email: mallory_malfaesence@sluz.ch
+    name: mallory_malfaesence
+    ssh-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXQspnfHu/LuIdjZ2aBgCPwIYj+CyIlgYv8+KBLn2s5 patrick.bucher@mailbox.org"

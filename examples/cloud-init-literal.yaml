@@ -1,0 +1,10 @@
+#cloud-config
+user:
+  name: demo
+  groups: sudo
+  lock_passwd: false
+  plain_text_passwd: topsecret
+  shell: /usr/bin/bash
+  ssh_authorized_keys:
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXQspnfHu/LuIdjZ2aBgCPwIYj+CyIlgYv8+KBLn2s5 patrick.bucher@mailbox.org"
+  sudo: "ALL=(ALL) NOPASSWD:ALL"
