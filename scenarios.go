@@ -38,11 +38,12 @@ type ScenarioInstance struct {
 }
 
 type ScenarioNetwork struct {
-	Name     string `yaml:"name"`
-	StartIP  string `yaml:"start-ip"`
-	EndIP    string `yaml:"end-ip"`
-	Netmask  string `yaml:"netmask"`
-	Connects []ScenarioNetworkConnection
+	Name        string `yaml:"name"`
+	Description string `yaml:"description,omitempty"`
+	StartIP     string `yaml:"start-ip"`
+	EndIP       string `yaml:"end-ip"`
+	Netmask     string `yaml:"netmask"`
+	Connects    []ScenarioNetworkConnection
 }
 
 type ScenarioNetworkConnection struct {
@@ -123,6 +124,7 @@ type ScenarioSetup struct {
 	Instances      map[string]ScenarioInstance
 	InstanceOwners map[string]string
 	Networks       map[string]ScenarioNetwork
+	NetworkOwners  map[string]string
 	Attachments    map[string]map[string]net.IP
 }
 
@@ -134,6 +136,7 @@ func (s *Scenario) CompileFor(ctx context.Context, g *Group) *ScenarioSetup {
 		Instances:      make(map[string]ScenarioInstance, nInstances*nUsers),
 		InstanceOwners: make(map[string]string, nInstances*nUsers),
 		Networks:       make(map[string]ScenarioNetwork, nNetworks*nUsers),
+		NetworkOwners:  make(map[string]string, nNetworks*nUsers),
 		Attachments:    make(map[string]map[string]net.IP),
 	}
 	for _, user := range g.Users {
@@ -145,6 +148,7 @@ func (s *Scenario) CompileFor(ctx context.Context, g *Group) *ScenarioSetup {
 		for _, network := range s.Networks {
 			networkName := fmt.Sprintf("%s_%s", user.Name, network.Name)
 			setup.Networks[networkName] = network
+			setup.InstanceOwners[networkName] = user.Name
 			for _, connect := range network.Connects {
 				instanceName := fmt.Sprintf("%s_%s", user.Name, connect.Instance)
 				if _, ok := setup.Attachments[instanceName]; !ok {
@@ -218,20 +222,20 @@ func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 	}
 	networkIDsByName := make(map[string]v3.UUID)
 	for networkName, details := range setup.Networks {
+		owner := setup.NetworkOwners[networkName]
 		req := v3.CreatePrivateNetworkRequest{
 			Name:        networkName,
-			Description: "", // TODO: incorporate network description into YAML file format
+			Description: details.Description,
 			StartIP:     net.ParseIP(details.StartIP),
 			EndIP:       net.ParseIP(details.EndIP),
 			Netmask:     net.ParseIP(details.Netmask),
-			// TODO: labels as above (requires additional NetworkOwners map on setup)
 		}
 		op, err := exo.CreatePrivateNetwork(ctx, req)
 		if err != nil {
 			return fmt.Errorf(`create network "%s": %w`, networkName, err)
 		}
 		networkIDsByName[networkName] = op.Reference.ID
-		fmt.Printf("created network %s\n", networkName /* TODO: output owner */)
+		fmt.Printf("created network %s for %s\n", networkName, owner)
 	}
 	for instanceName, attachments := range setup.Attachments {
 		for networkName, ip := range attachments {
