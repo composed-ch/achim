@@ -2,11 +2,14 @@ package achim
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"strings"
 
 	"github.com/composed-ch/achim/labels"
+	"github.com/composed-ch/achim/templates"
 	"github.com/composed-ch/goset"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -295,4 +298,85 @@ func uniqueNetworks(ctx context.Context, setup *ScenarioSetup) error {
 		return fmt.Errorf("network already exist: %s", strings.Join(conflictingNetworkNames.Slice(), ", "))
 	}
 	return nil
+}
+
+func ExportScenarioOverview(ctx context.Context, scenario, by, file string, hidePassword bool) error {
+	exo := ctx.Value("exo").(*v3.Client)
+	if file == "" {
+		return errors.New("missing ouput file name")
+	}
+	if by == "" {
+		by = fmt.Sprintf("scenario=%s", scenario)
+	} else {
+		by = fmt.Sprintf("%s,scenario=%s", by, scenario)
+	}
+	instances, err := ListInstances(ctx, by)
+	if err != nil {
+		return fmt.Errorf(`load instances by "%s": %w`, by, err)
+	}
+	scenarioData := templates.ScenarioData{
+		Selection: by,
+		Entries:   make([]templates.ScenarioEntry, len(instances)),
+	}
+	templateCache := make(map[v3.UUID]*v3.Template)
+	for i, instance := range instances {
+		var owner string
+		if val, ok := instance.Labels["owner"]; ok {
+			owner = val
+		}
+		var image string
+		var defaultUser string
+		var connection string
+		if t, ok := templateCache[instance.Template.ID]; !ok {
+			if t, err := exo.GetTemplate(ctx, instance.Template.ID); err == nil {
+				templateCache[instance.Template.ID] = t
+				image = t.Name
+				defaultUser = t.DefaultUser
+				connection = buildConnectionString(t, &instance, defaultUser)
+			}
+		} else {
+			image = t.Name
+			defaultUser = t.DefaultUser
+			connection = buildConnectionString(t, &instance, defaultUser)
+		}
+		var password string
+		if hidePassword {
+			password = "********"
+		} else {
+			if response, err := exo.RevealInstancePassword(ctx, instance.ID); err != nil {
+				password = "[N/A]"
+			} else {
+				password = response.Password
+			}
+		}
+		entry := templates.ScenarioEntry{
+			Owner:      owner,
+			Host:       instance.Name,
+			Image:      image,
+			IP:         instance.PublicIP.String(),
+			Username:   defaultUser,
+			Password:   password,
+			Connection: connection,
+		}
+		scenarioData.Entries[i] = entry
+	}
+	slices.SortFunc(scenarioData.Entries, func(l, r templates.ScenarioEntry) int {
+		byOwner := strings.Compare(l.Owner, r.Owner)
+		if byOwner != 0 {
+			return byOwner
+		} else {
+			return strings.Compare(l.Host, r.Host)
+		}
+	})
+	return templates.Output(scenarioData, "scenario", file)
+}
+
+func buildConnectionString(t *v3.Template, i *v3.Instance, user string) string {
+	var proto string
+	if t.Family == "windows" {
+		proto = "rdp"
+	} else {
+		proto = "ssh"
+	}
+	return fmt.Sprintf("%s %s@%s", proto, user, i.PublicIP)
 }

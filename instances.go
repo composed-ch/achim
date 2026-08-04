@@ -2,8 +2,8 @@ package achim
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"html/template"
 	"maps"
 	"net/http"
 	"os"
@@ -249,7 +249,10 @@ func FormatInstance(instance v3.Instance) string {
 	return fmt.Sprintf("%-40s %-32s %15s %-10s", instance.ID, instance.Name, instance.PublicIP, instance.State)
 }
 
-func Overview(ctx context.Context, by, file string) error {
+func ExportInstanceOverview(ctx context.Context, by, file string) error {
+	if file == "" {
+		return errors.New("missing ouput file name")
+	}
 	instances, err := ListInstances(ctx, by)
 	if err != nil {
 		return fmt.Errorf("list instances: %w", err)
@@ -271,30 +274,11 @@ func Overview(ctx context.Context, by, file string) error {
 			SSHCommand: fmt.Sprintf("ssh %s@%s", "user", ip),
 		}
 	}
-	data := templates.OverviewData{
+	overviewData := templates.OverviewData{
 		Entries:   entries,
 		Selection: by,
 	}
-	tmpl, err := template.New("overview").Parse(templates.Overview)
-	if err != nil {
-		return fmt.Errorf("parse overview template: %w", err)
-	}
-	var html *os.File
-	if file != "" {
-		f, err := os.Create(file)
-		if err != nil {
-			return fmt.Errorf("create %s: %w", file, err)
-		}
-		defer f.Close()
-		html = f
-	} else {
-		html = os.Stdout
-	}
-	if err := tmpl.Execute(html, data); err != nil {
-		return fmt.Errorf("execute overview template: %w", err)
-	}
-	fmt.Printf("overview created under %s\n", file)
-	return nil
+	return templates.Output[templates.OverviewData](overviewData, "overview", file)
 }
 
 func ProbeInstances(ctx context.Context, by, suffix, domain string, secure bool) error {

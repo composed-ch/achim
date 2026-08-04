@@ -371,7 +371,7 @@ func main() {
 						Action: func(ctx context.Context, c *cli.Command) error {
 							file := c.String("file")
 							by := c.String("by")
-							return achim.Overview(ctx, by, file)
+							return achim.ExportInstanceOverview(ctx, by, file)
 						},
 					},
 					{
@@ -693,10 +693,34 @@ func main() {
 						},
 					},
 					{
-						Name: "destroy",
-					},
-					{
-						Name: "export-overview",
+						Name:  "overview",
+						Usage: "export HTML overview for scenario matching selection",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "file",
+								Usage:   "file path for HTML output (stdout if missing)",
+								Aliases: []string{"f"},
+							},
+							&cli.StringFlag{
+								Name:    "scenario",
+								Usage:   "name of the scenario as defined in the scenario YAML file",
+								Aliases: []string{"s"},
+							},
+							&cli.BoolFlag{
+								Name:    "hide-password",
+								Usage:   "whether or not to hide the password",
+								Aliases: []string{"P"},
+							},
+							optionalByFlag,
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							scenario := c.String("scenario")
+							by := c.String("by")
+							file := c.String("file")
+							hidePassword := c.Bool("hide-password")
+							return achim.ExportScenarioOverview(ctx, scenario, by, file, hidePassword)
+						},
 					},
 				},
 			},
