@@ -12,6 +12,9 @@ type Label struct {
 }
 
 func ParseLabels(raw string) ([]Label, error) {
+	if raw == "" {
+		return make([]Label, 0), nil
+	}
 	pairs := strings.Split(raw, ",")
 	selectors := make([]Label, len(pairs))
 	for i, pair := range pairs {

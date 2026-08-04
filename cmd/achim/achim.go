@@ -648,7 +648,49 @@ func main() {
 				Name: "scenario",
 				Commands: []*cli.Command{
 					{
-						Name: "create",
+						Name:  "create",
+						Usage: "create a scenario, i.e. a multi-instance per user setting",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "scenario",
+								Usage:    "path to scenario YAML file",
+								Aliases:  []string{"s"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "group",
+								Usage:    "path to group YAML file",
+								Aliases:  []string{"g"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "key",
+								Usage:    "name of the SSH key",
+								Aliases:  []string{"k"},
+								Required: true,
+							},
+							&cli.BoolFlag{
+								Name:     "autostart",
+								Usage:    "whether or not to automatically start the instances",
+								Aliases:  []string{"a"},
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:    "labels",
+								Usage:   "labels as key/value pairs, e.g. foo=bar,qux=baz",
+								Aliases: []string{"l"},
+							},
+						},
+						Before: before,
+						Action: func(ctx context.Context, c *cli.Command) error {
+							return achim.CreateScenario(ctx, achim.NewScenarioParams{
+								ScenarioFile: c.String("scenario"),
+								GroupFile:    c.String("group"),
+								KeyName:      c.String("key"),
+								Autostart:    c.Bool("autostart"),
+								Labels:       c.String("labels"),
+							})
+						},
 					},
 					{
 						Name: "destroy",
