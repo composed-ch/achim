@@ -260,6 +260,7 @@ func Overview(ctx context.Context, by, file string) error {
 		for k, v := range instance.Labels {
 			if k == "owner" {
 				owner = v
+				break
 			}
 		}
 		ip := instance.PublicIP.String()
