@@ -44,7 +44,6 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] create (create-scenario)
             - TODO: network labels (if needed)
             - TODO: cloud init data (if needed)
-        - [ ] destroy (destroy-scenario)
         - [ ] export-overview (export-scenario-overview)
     - image
         - [x] list (list-images)
