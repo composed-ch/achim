@@ -24,10 +24,16 @@ type Scenario struct {
 	Networks  []ScenarioNetwork  `yaml:"networks"`
 }
 
+const (
+	MinDiskSizeGB = 10
+	MaxDiskSizeGB = 250
+)
+
 type ScenarioInstance struct {
-	Name  string `yaml:"name"`
-	Image string `yaml:"image"`
-	Size  string `yaml:"size"`
+	Name       string `yaml:"name"`
+	Image      string `yaml:"image"`
+	Size       string `yaml:"size"`
+	DiskSizeGB uint   `yaml:"disk-gb"`
 }
 
 type ScenarioNetwork struct {
@@ -53,6 +59,10 @@ func (s *Scenario) ValidateInternally() error {
 	instances := make(map[string]ScenarioInstance, len(s.Instances))
 	for _, instance := range s.Instances {
 		instances[instance.Name] = instance
+		if instance.DiskSizeGB < MinDiskSizeGB || instance.DiskSizeGB > MaxDiskSizeGB {
+			return fmt.Errorf("disk size for instance %s is %d, must be within [%d;%d]",
+				instance.Name, instance.DiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
+		}
 	}
 	for _, network := range s.Networks {
 		if net.ParseIP(network.StartIP) == nil {
