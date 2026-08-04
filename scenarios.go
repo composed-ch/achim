@@ -105,6 +105,41 @@ func (s *Scenario) ValidateExternally(ctx context.Context) error {
 	return nil
 }
 
+type ScenarioSetup struct {
+	Instances   map[string]*v3.CreateInstanceRequest
+	Networks    map[string]*v3.CreatePrivateNetworkRequest
+	Attachments map[string]map[string]net.IP
+}
+
+func (s *Scenario) CompileFor(ctx context.Context, g *Group) (*ScenarioSetup, error) {
+	nInstances := len(s.Instances)
+	nNetworks := len(s.Networks)
+	nUsers := len(g.Users)
+	setup := ScenarioSetup{
+		Instances:   make(map[string]*v3.CreateInstanceRequest, nInstances*nUsers),
+		Networks:    make(map[string]*v3.CreatePrivateNetworkRequest, nNetworks*nUsers),
+		Attachments: make(map[string]map[string]net.IP),
+	}
+	for _, user := range g.Users {
+		for _, instance := range s.Instances {
+			instanceName := fmt.Sprintf("%s_%s", user.Name, instance.Name)
+			setup.Instances[instanceName] = &v3.CreateInstanceRequest{ /* TODO */ }
+		}
+		for _, network := range s.Networks {
+			networkName := fmt.Sprintf("%s_%s", user.Name, network.Name)
+			setup.Networks[networkName] = &v3.CreatePrivateNetworkRequest{ /* TODO */ }
+			for _, connect := range network.Connects {
+				instanceName := fmt.Sprintf("%s_%s", user.Name, connect.Instance)
+				if _, ok := setup.Attachments[instanceName]; !ok {
+					setup.Attachments[instanceName] = make(map[string]net.IP)
+				}
+				setup.Attachments[instanceName][networkName] = net.ParseIP(connect.IP)
+			}
+		}
+	}
+	return &setup, nil
+}
+
 func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 	exo := ctx.Value("exo").(*v3.Client)
 	scenario, err := ParseScenarioFile(params.ScenarioFile)
@@ -125,6 +160,11 @@ func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 	if err != nil {
 		return fmt.Errorf(`parse labels "%s": %w`, params.Labels, err)
 	}
+	setup, err := scenario.CompileFor(ctx, group)
+	if err != nil {
+		return fmt.Errorf("compile setup: %w", err)
+	}
+	fmt.Println(setup)
 	fmt.Println(exo, scenario, group, labels)
 	return nil
 }
