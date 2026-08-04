@@ -249,7 +249,7 @@ func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 			}
 			_, err := exo.AttachInstanceToPrivateNetwork(ctx, networkID, req)
 			if err != nil {
-				return fmt.Errorf("attach network %s to instance %s with IP %s: %w", networkName, instanceName, ip)
+				return fmt.Errorf("attach network %s to instance %s with IP %s: %w", networkName, instanceName, ip, err)
 			}
 			fmt.Printf("attached network %s to instance %s with IP %s\n", networkName, instanceName, ip)
 		}
