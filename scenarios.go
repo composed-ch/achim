@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"slices"
+	"strings"
 
 	"github.com/composed-ch/achim/labels"
+	"github.com/composed-ch/goset"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -33,7 +34,7 @@ type ScenarioInstance struct {
 	Name       string `yaml:"name"`
 	Image      string `yaml:"image"`
 	Size       string `yaml:"size"`
-	DiskSizeGB uint   `yaml:"disk-gb"`
+	DiskSizeGB int64  `yaml:"disk-gb"`
 }
 
 type ScenarioNetwork struct {
@@ -87,47 +88,59 @@ func (s *Scenario) ValidateInternally() error {
 	return nil
 }
 
+type InstanceCreationCache struct {
+	TemplatesByImageName map[string]*v3.Template
+	InstanceTypesBySize  map[string]*v3.InstanceType
+}
+
 // ValidateExternally validates all the image and size definitions in the instances section.
-func (s *Scenario) ValidateExternally(ctx context.Context) error {
+func (s *Scenario) ValidateExternally(ctx context.Context) (*InstanceCreationCache, error) {
+	cache := InstanceCreationCache{
+		TemplatesByImageName: make(map[string]*v3.Template),
+		InstanceTypesBySize:  make(map[string]*v3.InstanceType),
+	}
 	allowedSizes, err := GetAllowedSizes(ctx)
 	if err != nil {
-		return fmt.Errorf("look up allowed sizes: %w", err)
+		return nil, fmt.Errorf("look up allowed sizes: %w", err)
 	}
 	for _, instance := range s.Instances {
-		_, err := GetTemplateByName(ctx, instance.Image)
+		template, err := GetTemplateByName(ctx, instance.Image)
 		if err != nil {
-			return fmt.Errorf("get image for instance %s by name %s: %w", instance.Name, instance.Image, err)
+			return nil, fmt.Errorf("get image for instance %s by name %s: %w", instance.Name, instance.Image, err)
 		}
-		if !slices.Contains(allowedSizes, instance.Size) {
-			return fmt.Errorf("no such size %s (demanded by instance %s)", instance.Size, instance.Name)
+		cache.TemplatesByImageName[instance.Name] = template
+		if instanceType, ok := allowedSizes[instance.Size]; !ok {
+			return nil, fmt.Errorf("no such size %s (demanded by instance %s)", instance.Size, instance.Name)
+		} else {
+			cache.InstanceTypesBySize[instance.Size] = instanceType
 		}
 	}
-	return nil
+	return &cache, nil
 }
 
 type ScenarioSetup struct {
-	Instances   map[string]*v3.CreateInstanceRequest
-	Networks    map[string]*v3.CreatePrivateNetworkRequest
+	Instances   map[string]ScenarioInstance
+	Networks    map[string]ScenarioNetwork
 	Attachments map[string]map[string]net.IP
 }
 
-func (s *Scenario) CompileFor(ctx context.Context, g *Group) (*ScenarioSetup, error) {
+func (s *Scenario) CompileFor(ctx context.Context, g *Group) *ScenarioSetup {
 	nInstances := len(s.Instances)
 	nNetworks := len(s.Networks)
 	nUsers := len(g.Users)
 	setup := ScenarioSetup{
-		Instances:   make(map[string]*v3.CreateInstanceRequest, nInstances*nUsers),
-		Networks:    make(map[string]*v3.CreatePrivateNetworkRequest, nNetworks*nUsers),
+		Instances:   make(map[string]ScenarioInstance, nInstances*nUsers),
+		Networks:    make(map[string]ScenarioNetwork, nNetworks*nUsers),
 		Attachments: make(map[string]map[string]net.IP),
 	}
 	for _, user := range g.Users {
 		for _, instance := range s.Instances {
 			instanceName := fmt.Sprintf("%s_%s", user.Name, instance.Name)
-			setup.Instances[instanceName] = &v3.CreateInstanceRequest{ /* TODO */ }
+			setup.Instances[instanceName] = instance
 		}
 		for _, network := range s.Networks {
 			networkName := fmt.Sprintf("%s_%s", user.Name, network.Name)
-			setup.Networks[networkName] = &v3.CreatePrivateNetworkRequest{ /* TODO */ }
+			setup.Networks[networkName] = network
 			for _, connect := range network.Connects {
 				instanceName := fmt.Sprintf("%s_%s", user.Name, connect.Instance)
 				if _, ok := setup.Attachments[instanceName]; !ok {
@@ -137,7 +150,7 @@ func (s *Scenario) CompileFor(ctx context.Context, g *Group) (*ScenarioSetup, er
 			}
 		}
 	}
-	return &setup, nil
+	return &setup
 }
 
 func CreateScenario(ctx context.Context, params NewScenarioParams) error {
@@ -149,7 +162,8 @@ func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 	if err := scenario.ValidateInternally(); err != nil {
 		return fmt.Errorf("validate scenario internally: %w", err)
 	}
-	if err := scenario.ValidateExternally(ctx); err != nil {
+	cache, err := scenario.ValidateExternally(ctx)
+	if err != nil {
 		return fmt.Errorf("validate scenario externally: %w", err)
 	}
 	group, err := ParseGroupFile(params.GroupFile)
@@ -160,11 +174,66 @@ func CreateScenario(ctx context.Context, params NewScenarioParams) error {
 	if err != nil {
 		return fmt.Errorf(`parse labels "%s": %w`, params.Labels, err)
 	}
-	setup, err := scenario.CompileFor(ctx, group)
-	if err != nil {
-		return fmt.Errorf("compile setup: %w", err)
+	setup := scenario.CompileFor(ctx, group)
+	if err := uniqueInstances(ctx, setup); err != nil {
+		return err
 	}
-	fmt.Println(setup)
-	fmt.Println(exo, scenario, group, labels)
+	if err := uniqueNetworks(ctx, setup); err != nil {
+		return err
+	}
+
+	for instanceName, _ := range setup.Instances {
+		fmt.Println("create instance", instanceName)
+	}
+	for networkName, _ := range setup.Networks {
+		fmt.Println("create network", networkName)
+	}
+	for instanceName, attachments := range setup.Attachments {
+		for networkName, ip := range attachments {
+			fmt.Println("attach instance", instanceName, "to network", networkName, "with IP", ip)
+		}
+	}
+
+	fmt.Println(labels, cache, exo)
+	return nil
+}
+
+func uniqueInstances(ctx context.Context, setup *ScenarioSetup) error {
+	existingInstances, err := ListInstances(ctx, "")
+	if err != nil {
+		return fmt.Errorf("list existing instances: %w", err)
+	}
+	existingInstanceNames := make([]string, len(existingInstances))
+	for i, instance := range existingInstances {
+		existingInstanceNames[i] = instance.Name
+	}
+	scenarioInstanceNames := make([]string, 0)
+	for name := range setup.Instances {
+		scenarioInstanceNames = append(scenarioInstanceNames, name)
+	}
+	conflictingInstanceNames := goset.From(existingInstanceNames).Inter(goset.From(scenarioInstanceNames))
+	if len(conflictingInstanceNames.Entries) > 0 {
+		return fmt.Errorf("instances already exist: %s", strings.Join(conflictingInstanceNames.Slice(), ", "))
+	}
+	return nil
+}
+
+func uniqueNetworks(ctx context.Context, setup *ScenarioSetup) error {
+	existingNetworks, err := GetNetworks(ctx, "")
+	if err != nil {
+		return fmt.Errorf("list existing instances: %w", err)
+	}
+	existingNetworkNames := make([]string, len(existingNetworks))
+	for i, network := range existingNetworks {
+		existingNetworkNames[i] = network.Name
+	}
+	scenarioNetworkNames := make([]string, 0)
+	for name := range setup.Instances {
+		scenarioNetworkNames = append(scenarioNetworkNames, name)
+	}
+	conflictingNetworkNames := goset.From(existingNetworkNames).Inter(goset.From(scenarioNetworkNames))
+	if len(conflictingNetworkNames.Entries) > 0 {
+		return fmt.Errorf("network already exist: %s", strings.Join(conflictingNetworkNames.Slice(), ", "))
+	}
 	return nil
 }
