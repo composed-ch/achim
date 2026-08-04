@@ -296,23 +296,44 @@ func Overview(ctx context.Context, by, file string) error {
 	return nil
 }
 
-func ProbeInstances(ctx context.Context, by, suffix string, secure bool) error {
+func ProbeInstances(ctx context.Context, by, suffix, domain string, secure bool) error {
+	exo := ctx.Value("exo").(*v3.Client)
 	instances, err := ListInstances(ctx, by)
 	if err != nil {
 		return fmt.Errorf("list instances: %w", err)
+	}
+	var reverseDNS map[string]string
+	if domain != "" {
+		domain, err := getDNSDomain(ctx, domain)
+		if err != nil {
+			return fmt.Errorf(`get domain %s: %w`, domain, err)
+		}
+		res, err := exo.ListDNSDomainRecords(ctx, domain.ID)
+		if err != nil {
+			return fmt.Errorf(`list records for domain %s: %w`, domain, err)
+		}
+		reverseDNS = make(map[string]string, len(res.DNSDomainRecords))
+		for _, record := range res.DNSDomainRecords {
+			reverseDNS[record.Content] = record.Name
+		}
 	}
 	for _, instance := range instances {
 		proto := "http"
 		if secure {
 			proto = "https"
 		}
-		url := fmt.Sprintf("%s://%s/%s", proto, instance.PublicIP, suffix)
+		var url string
+		if subdomain, ok := reverseDNS[instance.PublicIP.String()]; ok {
+			url = fmt.Sprintf("%s://%s.%s/%s", proto, subdomain, domain, suffix)
+		} else {
+			url = fmt.Sprintf("%s://%s/%s", proto, instance.PublicIP, suffix)
+		}
 		res, err := http.Get(url)
 		if err != nil {
 			fmt.Printf("%-32s GET %s\tERR\n", instance.Name, url)
 			continue
 		}
-		fmt.Printf("%-32s GET %s\t%d\n", instance.Name, url, res.StatusCode)
+		fmt.Printf("%-32s GET %-50s\t%d\n", instance.Name, url, res.StatusCode)
 	}
 	return nil
 }

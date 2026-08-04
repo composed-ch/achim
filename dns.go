@@ -24,7 +24,7 @@ func FlushRecords(ctx context.Context, domain string) error {
 			if err != nil {
 				return fmt.Errorf(`delete record "%s" for domain "%s": %w`, record.Name, domain, err)
 			} else {
-				fmt.Printf("deleted DNS record %s.%s=%s\n", record.Name, domain, record.Content)
+				fmt.Printf("deleted DNS record %s.%s %s\n", record.Name, domain, record.Content)
 			}
 		}
 	}
@@ -79,7 +79,7 @@ func SyncRecords(ctx context.Context, domain string) error {
 		if err != nil {
 			return fmt.Errorf(`create DNS record %v for domain "%s": %w`, createEntry, domain, err)
 		} else {
-			fmt.Printf("created DNS %s record %s.%s=%s TTL=%d\n",
+			fmt.Printf("created DNS %s record %s.%s %s TTL=%d\n",
 				v3.CreateDNSDomainRecordRequestTypeA, createEntry.Name, domain, createEntry.Content, ttl)
 		}
 	}
@@ -92,7 +92,7 @@ func SyncRecords(ctx context.Context, domain string) error {
 		if err != nil {
 			return fmt.Errorf(`delete DNS record %v (id: %v) for domain "%s": %w`, deleteEntry, id, domain, err)
 		} else {
-			fmt.Printf("deleted DNS record %s.%s=%s\n", deleteEntry.Name, domain, deleteEntry.Content)
+			fmt.Printf("deleted DNS record %s.%s %s\n", deleteEntry.Name, domain, deleteEntry.Content)
 		}
 	}
 	return nil

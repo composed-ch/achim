@@ -20,7 +20,6 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] list (list-instances)
         - [x] overview (export-group-overview)
         - [x] probe
-            - TODO: extend to domain probing once DNS is implemented
         - [x] protect
         - [x] ~~resize~~ embiggen (resize-disk)
         - [x] scale (scale-instance)
@@ -47,5 +46,3 @@ This Go implementation is a port from the [Python implementation](https://github
         - [ ] export-overview (export-scenario-overview)
     - image
         - [x] list (list-images)
-- other tasks
-    - [ ] add useful output to commands, especially ones involving `--by` selection

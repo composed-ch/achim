@@ -380,12 +380,19 @@ func main() {
 						Flags: []cli.Flag{
 							mandatoryByFlag,
 							&cli.StringFlag{
-								Name:  "suffix",
-								Usage: "URL suffix, e.g. index.html",
+								Name:    "suffix",
+								Usage:   "URL suffix, e.g. index.html",
+								Aliases: []string{"s"},
 							},
 							&cli.BoolFlag{
-								Name:  "secure",
-								Usage: "whether or not to use TLS (HTTPS)",
+								Name:    "secure",
+								Usage:   "whether or not to use TLS (HTTPS)",
+								Aliases: []string{"t"},
+							},
+							&cli.StringFlag{
+								Name:    "domain",
+								Usage:   "domain to use (IPs are used for probe if omitted)",
+								Aliases: []string{"t"},
 							},
 						},
 						Before: before,
@@ -393,7 +400,8 @@ func main() {
 							by := c.String("by")
 							suffix := c.String("suffix")
 							secure := c.Bool("secure")
-							return achim.ProbeInstances(ctx, by, suffix, secure)
+							domain := c.String("domain")
+							return achim.ProbeInstances(ctx, by, suffix, domain, secure)
 						},
 					},
 					{
