@@ -30,7 +30,8 @@ func main() {
 		Usage: "Advanced Cloud Hyperscaler Infrastructure Manager",
 		Commands: []*cli.Command{
 			{
-				Name: "dns",
+				Name:  "dns",
+				Usage: "Manage subdomains for registered domains",
 				Commands: []*cli.Command{
 					{
 						Name:  "flush",
@@ -76,7 +77,8 @@ func main() {
 				},
 			},
 			{
-				Name: "group",
+				Name:  "group",
+				Usage: "Manage virtual machines for groups of users",
 				Commands: []*cli.Command{
 					{
 						Name:  "create",
@@ -175,7 +177,7 @@ func main() {
 			},
 			{
 				Name:  "image",
-				Usage: "information on available images",
+				Usage: "Show information on available images",
 				Commands: []*cli.Command{
 					{
 						Name:  "list",
@@ -204,7 +206,7 @@ func main() {
 			},
 			{
 				Name:  "instance",
-				Usage: "manage compute instances",
+				Usage: "Manage single compute instances",
 				Commands: []*cli.Command{
 					{
 						Name:  "create",
@@ -504,7 +506,8 @@ func main() {
 				},
 			},
 			{
-				Name: "network",
+				Name:  "network",
+				Usage: "Manage virtual networks",
 				Commands: []*cli.Command{
 					{
 						Name:  "attach",
@@ -645,7 +648,8 @@ func main() {
 				},
 			},
 			{
-				Name: "scenario",
+				Name:  "scenario",
+				Usage: "Manage multi-VM setups for groups",
 				Commands: []*cli.Command{
 					{
 						Name:  "create",
@@ -725,7 +729,8 @@ func main() {
 				},
 			},
 			{
-				Name: "tenant",
+				Name:  "tenant",
+				Usage: "Manage tenant access through API keys stored locally",
 				Commands: []*cli.Command{
 					{
 						Name:  "add",
