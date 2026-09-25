@@ -364,8 +364,9 @@ func main() {
 						Usage: "export HTML overview for instances matching selection",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
-								Name:  "file",
-								Usage: "file path for HTML output (stdout if missing)",
+								Name:    "file",
+								Usage:   "file path for HTML output (stdout if missing)",
+								Aliases: []string{"f"},
 							},
 							mandatoryByFlag,
 						},

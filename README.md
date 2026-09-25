@@ -47,3 +47,8 @@ This Go implementation is a port from the [Python implementation](https://github
         - [x] export-overview (export-scenario-overview)
     - image
         - [x] list (list-images)
+
+## TODO
+
+- [ ] establish and implement sort order for `instance list` & `instance overview`
+- [ ] make sure there are short alternatives for flag names
