@@ -1,1 +1,1 @@
-- instance create for `firstname.lastname` changes owner name to `firstname_lastname`, which creates a mismatch for Cloud Castle
+- instance create for `firstname.lastname` changes label `owner` to `firstname_lastname`, which creates a mismatch for Cloud Castle
