@@ -354,13 +354,13 @@ func changeInstanceState(ctx context.Context, by string, up bool) error {
 		return fmt.Errorf(`list instances to change up state to %v: %w`, up, err)
 	}
 	for _, instance := range instances {
-		if up {
+		if up && instance.State != v3.InstanceStateRunning && instance.State != v3.InstanceStateStarting {
 			if _, err := exo.StartInstance(ctx, instance.ID, v3.StartInstanceRequest{}); err != nil {
 				return err
 			} else {
 				fmt.Printf("started instance %s\n", instance.Name)
 			}
-		} else {
+		} else if instance.State != v3.InstanceStateStopped && instance.State != v3.InstanceStateStopping {
 			if _, err := exo.StopInstance(ctx, instance.ID); err != nil {
 				return err
 			} else {
