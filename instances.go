@@ -360,7 +360,7 @@ func changeInstanceState(ctx context.Context, by string, up bool) error {
 			} else {
 				fmt.Printf("started instance %s\n", instance.Name)
 			}
-		} else if instance.State != v3.InstanceStateStopped && instance.State != v3.InstanceStateStopping {
+		} else if !up && instance.State != v3.InstanceStateStopped && instance.State != v3.InstanceStateStopping {
 			if _, err := exo.StopInstance(ctx, instance.ID); err != nil {
 				return err
 			} else {
