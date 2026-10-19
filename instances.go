@@ -322,7 +322,7 @@ func ProbeInstances(ctx context.Context, by, suffix, domain string, secure bool,
 		}
 		res, err := http.Get(url)
 		if err != nil {
-			fmt.Printf("%-32s GET %s\tERR\n", instance.Name, url)
+			fmt.Printf("%-32s GET %-50s\tERR\n", instance.Name, url)
 			continue
 		}
 		fmt.Printf("%-32s GET %-50s\t%d\n", instance.Name, url, res.StatusCode)
