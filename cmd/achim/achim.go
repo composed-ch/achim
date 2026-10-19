@@ -390,12 +390,17 @@ func main() {
 							&cli.BoolFlag{
 								Name:    "secure",
 								Usage:   "whether or not to use TLS (HTTPS)",
-								Aliases: []string{"t"},
+								Aliases: []string{"h"},
 							},
 							&cli.StringFlag{
 								Name:    "domain",
-								Usage:   "domain to use (IPs are used for probe if omitted)",
-								Aliases: []string{"t"},
+								Usage:   "domain to use (IPs are used for probe if omitted, mutually exclusive with port)",
+								Aliases: []string{"d"},
+							},
+							&cli.Uint16Flag{
+								Name:    "port",
+								Usage:   "port to use (mutually exclusive with domain)",
+								Aliases: []string{"p"},
 							},
 						},
 						Before: before,
@@ -404,7 +409,8 @@ func main() {
 							suffix := c.String("suffix")
 							secure := c.Bool("secure")
 							domain := c.String("domain")
-							return achim.ProbeInstances(ctx, by, suffix, domain, secure)
+							port := c.Uint16("port")
+							return achim.ProbeInstances(ctx, by, suffix, domain, secure, port)
 						},
 					},
 					{

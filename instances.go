@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/composed-ch/achim/labels"
 	"github.com/composed-ch/achim/templates"
@@ -281,7 +282,11 @@ func ExportInstanceOverview(ctx context.Context, by, file string) error {
 	return templates.Output[templates.OverviewData](overviewData, "overview", file)
 }
 
-func ProbeInstances(ctx context.Context, by, suffix, domain string, secure bool) error {
+func ProbeInstances(ctx context.Context, by, suffix, domain string, secure bool, port uint16) error {
+	domain = strings.TrimSpace(domain)
+	if port > 0 && domain != "" {
+		return fmt.Errorf("either use port or domain, not both")
+	}
 	exo := ctx.Value("exo").(*v3.Client)
 	instances, err := ListInstances(ctx, by)
 	if err != nil {
@@ -310,6 +315,8 @@ func ProbeInstances(ctx context.Context, by, suffix, domain string, secure bool)
 		var url string
 		if subdomain, ok := reverseDNS[instance.PublicIP.String()]; ok {
 			url = fmt.Sprintf("%s://%s.%s/%s", proto, subdomain, domain, suffix)
+		} else if port > 0 {
+			url = fmt.Sprintf("%s://%s:%d/%s", proto, instance.PublicIP, port, suffix)
 		} else {
 			url = fmt.Sprintf("%s://%s/%s", proto, instance.PublicIP, suffix)
 		}
