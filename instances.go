@@ -9,8 +9,8 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"sync"
 
+	"github.com/composed-ch/achim/concurrent"
 	"github.com/composed-ch/achim/labels"
 	"github.com/composed-ch/achim/templates"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -161,45 +161,31 @@ func ScaleInstances(ctx context.Context, by string, size string) error {
 }
 
 func ListInstances(ctx context.Context, by string) ([]v3.Instance, error) {
-	type result = struct {
-		id       v3.UUID
-		instance *v3.Instance
-		err      error
-	}
-	fetchInstance := func(client *v3.Client, id v3.UUID, ch chan<- result) {
-		instance, err := getInstanceByID(ctx, id)
-		if err != nil {
-			ch <- result{id: id, instance: nil, err: fmt.Errorf(`get instance by ID "%s": %w`, id, err)}
-		}
-		ch <- result{id: id, instance: instance, err: nil}
-	}
 	exo := ctx.Value("exo").(*v3.Client)
 	instanceResult, err := exo.ListInstances(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("list instances: %w", err)
+	ids := make([]v3.UUID, 0)
+	for _, i := range instanceResult.Instances {
+		ids = append(ids, i.ID)
 	}
-	ch := make(chan result)
-	instances := make([]v3.Instance, 0)
-	var wg sync.WaitGroup
-	for _, item := range instanceResult.Instances {
-		wg.Add(1)
-		go fetchInstance(exo, item.ID, ch)
-	}
-	go func() {
-		for i := range ch {
-			if i.err != nil {
-				fmt.Fprintf(os.Stderr, "list instance %s: %v", i.id, i.err)
-			} else {
-				instances = append(instances, *i.instance)
-			}
-			wg.Done()
+	fetcher := func(id v3.UUID) (*v3.Instance, error) {
+		instance, err := getInstanceByID(ctx, id)
+		if err != nil {
+			return nil, fmt.Errorf(`get instance by ID "%s": %w`, id, err)
 		}
-	}()
-	wg.Wait()
-	matching, err := labels.Filter(labels.ToFilterableInstances(instances), by)
-	if err != nil {
-		return nil, fmt.Errorf("filter instances: %w", err)
+		return instance, nil
+
 	}
+	results := concurrent.Fetch[v3.UUID, *v3.Instance](fetcher, ids)
+	for _, result := range results {
+		if result.Err != nil {
+			fmt.Fprintf(os.Stderr, `list instance "%v": %v\n`, result.Req, result.Err)
+		}
+	}
+	instances := make([]v3.Instance, len(ids))
+	for i, result := range results {
+		instances[i] = *result.Res
+	}
+	matching, err := labels.Filter(labels.ToFilterableInstances(instances), by)
 	return labels.UnwrapInstances(matching), err
 }
 
