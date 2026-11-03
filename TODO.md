@@ -1,1 +1,2 @@
-- instance create for `firstname.lastname` changes label `owner` to `firstname_lastname`, which creates a mismatch for Cloud Castle
+- `instance create` for `firstname.lastname` changes label `owner` to `firstname_lastname`, which creates a mismatch for Cloud Castle
+- run requests for `instance probe` in parallel to speed up the reporting of available ones
