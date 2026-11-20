@@ -1,2 +1,3 @@
 - `instance create` for `firstname.lastname` changes label `owner` to `firstname_lastname`, which creates a mismatch for Cloud Castle
 - marshal ssh keys using single quotes (if possible), especially in group file output
+    - consider switching to different library with an [appropriate feature](https://github.com/yaml/go-yaml/blob/v4.0.0/docs/options.md#yamlwithquotepreferencestyle-yamlquotestyle)
